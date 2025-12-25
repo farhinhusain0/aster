@@ -1,0 +1,7 @@
+# Pre-commit Hook
+#
+# This script runs automatically before every commit.
+# It can be used to run linters, tests, or other checks to ensure code quality.
+#
+# Lint-staged (Currently Disabled)
+# #npx lint-staged

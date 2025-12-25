@@ -1,0 +1,126 @@
+import CallbackHandler, { Langfuse } from "langfuse-langchain";
+import { v4 as uuid } from "uuid";
+import { CreateTools } from "./tools";
+import { AnswerContext, LLMCallbacks } from "./callbacks";
+import {
+  RunAgentParams,
+  RunContext,
+  RunModelParams,
+  RunAgentResponse,
+} from "./types";
+import { secretManager } from "../common/secrets";
+import { buildAnswer } from "./utils";
+import { isLangfuseEnabled } from "../utils/ee";
+import {
+  investigationModel,
+  IOrganization,
+  organizationModel,
+} from "@aster/db";
+import { Callbacks } from "@langchain/core/callbacks/manager";
+import { getChatModel as getChatModelFn } from "./model";
+import { createGraph } from "./graph";
+
+export function generateTrace(context: RunContext) {
+  const langfuse = new Langfuse({
+    secretKey: process.env.LANGFUSE_SECRET_KEY as string,
+    publicKey: process.env.LANGFUSE_PUBLIC_KEY as string,
+    baseUrl: process.env.LANGFUSE_HOST as string,
+  });
+  const trace = langfuse.trace({
+    sessionId: context.eventId || uuid(),
+  });
+
+  const tags = Object.values(context).map((v) => String(v));
+  const userId = context.userId ? context.userId : null;
+  trace.update({ metadata: context, tags, userId });
+
+  return trace;
+}
+
+export async function runModel({ model, context, messages }: RunModelParams) {
+  const callbacks: Callbacks = [];
+  let lfCallback: CallbackHandler | null = null;
+  if (isLangfuseEnabled()) {
+    lfCallback = new CallbackHandler({
+      root: context.trace,
+      secretKey: process.env.LANGFUSE_SECRET_KEY as string,
+      publicKey: process.env.LANGFUSE_PUBLIC_KEY as string,
+      baseUrl: process.env.LANGFUSE_HOST as string,
+    });
+    callbacks.push(lfCallback);
+  }
+  const response = await model.invoke(messages, { callbacks });
+  const output = response.content as string;
+  const traceId = lfCallback?.getTraceId();
+  const observationId = lfCallback?.getLangchainRunId();
+  return { output, traceId, observationId, trace: context.trace };
+}
+
+export async function runAgent({
+  prompt,
+  template,
+  integrations,
+  context,
+  messages,
+  model,
+}: RunAgentParams): Promise<RunAgentResponse> {
+  const organization = (await organizationModel.getOneById(
+    context.organizationId as string,
+  )) as IOrganization;
+
+  /**
+   * When we are running the agent for any follow-up then we don't need to create a new investigation
+   */
+  let investigation = null;
+  if (context?.isInvestigation) {
+    investigation = await investigationModel.create({
+      status: "init",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      organization: organization,
+    });
+    context = { ...context, investigationId: investigation._id.toString() };
+  }
+
+  const populatedIntegrations =
+    await secretManager.populateCredentials(integrations);
+
+  const tools = await new CreateTools(populatedIntegrations, context).create();
+
+  // Custom logic for aggregating citations and sources from tools' activations
+  const answerContext = isLangfuseEnabled()
+    ? new AnswerContext(context.trace)
+    : new AnswerContext();
+  const globalCallbacks = new LLMCallbacks(answerContext);
+  const callbacks: Callbacks = [globalCallbacks];
+
+  // Langfuse monitoring
+  if (isLangfuseEnabled()) {
+    callbacks.push(
+      new CallbackHandler({
+        root: context.trace,
+        secretKey: process.env.LANGFUSE_SECRET_KEY as string,
+        publicKey: process.env.LANGFUSE_PUBLIC_KEY as string,
+        baseUrl: process.env.LANGFUSE_HOST as string,
+      }),
+    );
+  }
+  const graph = createGraph(model, tools);
+  const result = await graph.invoke({
+    messages: messages || [],
+    input: prompt,
+  });
+
+  const output = result.response;
+
+  const answer = buildAnswer(
+    output as string,
+    answerContext.getSources(),
+    context.initiatedBy === "SlackBot",
+  );
+  return {
+    answer,
+    answerContext,
+    investigation,
+  };
+}

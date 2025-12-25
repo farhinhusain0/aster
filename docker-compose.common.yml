@@ -1,0 +1,216 @@
+services:
+  # Infra services
+  envoy-common:
+    image: envoyproxy/envoy:v1.22-latest
+    container_name: envoy
+    profiles: ["app", "infra"]
+    ports:
+      - "${ENVOY_PORT}:${ENVOY_PORT}"
+    volumes:
+      - ./config/envoy/envoy.yaml:/etc/envoy/envoy.yaml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  mongo-common:
+    image: mongo
+    container_name: mongo
+    profiles: ["app", "infra"]
+    restart: always
+    volumes:
+      - ${DATA_DIR}/mongo:/data/db:rw
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_ROOT_USERNAME
+    command: ["--auth"]
+  chroma-common:
+    image: chromadb/chroma:0.5.1
+    container_name: chroma
+    profiles: ["app", "infra"]
+    ports:
+      - "${CHROMA_PORT}:${CHROMA_PORT}"
+    volumes:
+      - ${DATA_DIR}/chromadb:/chroma/chroma
+    environment:
+      - CHROMA_SERVER_AUTHN_CREDENTIALS
+      - CHROMA_SERVER_AUTHN_PROVIDER
+      - CHROMA_AUTH_TOKEN_TRANSPORT_HEADER
+  # App services
+  api-common:
+    container_name: api
+    profiles: ["app"]
+    environment:
+      - SMTP_CONNECTION_URL
+      - SLACK_APP_TOKEN
+      - SECRET_MANAGER_TYPE
+      # Azure Key Vault environment variables. Added empty strings fallback because
+      # they only need to be set if the secret manager type is azure.
+      - AZURE_KEY_VAULT_URL=${AZURE_KEY_VAULT_URL:-}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID:-}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-}
+      - SECRET_MANAGER_DIRECTORY
+      - HASHICORP_VAULT_ROOT_TOKEN
+      - HASHICORP_VAULT_UNSEAL_TOKEN
+      - LANGFUSE_SECRET_KEY
+      - LANGFUSE_PUBLIC_KEY
+      - LANGFUSE_HOST
+      - HASHICORP_VAULT_URL
+      - MONGO_URI
+      - DATA_PROCESSOR_URL
+      - PAGERDUTY_SECRET
+      - LOG_PARSER_URL
+      - DASHBOARD_APP_URL
+      - DASHBOARD_API_URL
+      - NODE_ENV=development
+      - METADATA_ENCRYPTION_KEY
+      - ENCRYPTION_SALT
+      - IMAGE_UPLOAD_DATA_DIRECTORY
+      - CHROMA_HOST
+      - CHROMA_API_KEY=${CHROMA_SERVER_AUTHN_CREDENTIALS}
+      - MICROSOFT_TEAMSBOT_URL
+      - MICROSOFT_APP_ID
+      - MICROSOFT_APP_TYPE
+      - MICROSOFT_APP_TENANT_ID
+      - MICROSOFT_APP_PASSWORD
+      - MICROSOFT_TEAMS_APP_ID
+      - MICROSOFT_APP_SCOPE
+      - MICROSOFT_APP_REDIRECT_URI
+      - JWT_SIGNING_SECRET
+      - OPENAI_CHAT_MODEL
+      - OPENAI_EMBEDDING_MODEL
+      - OPENAI_API_KEY
+      - OPENAI_EMBEDDING_DIMENSION
+      - CHATWOOT_EMAIL_PREFIX
+      - CHATWOOT_WEBTOKEN
+      - CHATWOOT_KEY
+      - ATLASSIAN_CLIENT_ID
+      - ATLASSIAN_CLIENT_SECRET
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    volumes:
+      - ${DATA_DIR}/secrets:${SECRET_MANAGER_DIRECTORY}
+      - ${DATA_DIR}/uploads:${IMAGE_UPLOAD_DATA_DIRECTORY}
+    depends_on:
+      - mongo
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  slackbot-common:
+    container_name: slackbot
+    profiles: ["app"]
+    environment:
+      - SLACK_APP_TOKEN
+      - SLACK_SIGNING_SECRET
+      - SECRET_MANAGER_TYPE
+      - SECRET_MANAGER_DIRECTORY
+      # Azure Key Vault environment variables. Added empty strings fallback because
+      # they only need to be set if the secret manager type is azure.
+      - AZURE_KEY_VAULT_URL=${AZURE_KEY_VAULT_URL:-}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID:-}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-}
+      # Hashicorp Vault environment variables. Added empty strings fallback because
+      - HASHICORP_VAULT_ROOT_TOKEN=${HASHICORP_VAULT_ROOT_TOKEN:-}
+      - HASHICORP_VAULT_UNSEAL_TOKEN=${HASHICORP_VAULT_UNSEAL_TOKEN:-}
+      - HASHICORP_VAULT_URL=${HASHICORP_VAULT_URL:-}
+      - API_URL
+      - PORT=${SLACKBOT_PORT}
+      - NODE_ENV=development
+      - DASHBOARD_APP_URL
+      - ENCRYPTION_SALT
+      - METADATA_ENCRYPTION_KEY
+      - MONGO_URI
+    ports:
+      - "${SLACKBOT_PORT}:${SLACKBOT_PORT}"
+    volumes:
+      - ${DATA_DIR}/secrets:${SECRET_MANAGER_DIRECTORY}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mongo
+  data-processor-common:
+    container_name: data-processor
+    profiles: ["app"]
+    environment:
+      - DOC_INDEXER_URL
+      - SECRET_MANAGER_TYPE
+      - SECRET_MANAGER_DIRECTORY
+      - SNAPSHOTS_DIRECTORY
+      # Azure Key Vault environment variables. Added empty strings fallback because
+      # they only need to be set if the secret manager type is azure.
+      - AZURE_KEY_VAULT_URL=${AZURE_KEY_VAULT_URL:-}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID:-}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-}
+      - HASHICORP_VAULT_ROOT_TOKEN
+      - HASHICORP_VAULT_UNSEAL_TOKEN
+      - HASHICORP_VAULT_URL
+      - MONGO_URI
+      - IS_DOCKER=true
+    ports:
+      - "${DATA_PROCESSOR_PORT}:${DATA_PROCESSOR_PORT}"
+    volumes:
+      - ${DATA_DIR}/secrets:${SECRET_MANAGER_DIRECTORY}
+      - ${DATA_DIR}/snapshots:${SNAPSHOTS_DIRECTORY}
+    depends_on:
+      - mongo
+  doc-indexer-common:
+    container_name: doc-indexer
+    profiles: ["app"]
+    environment:
+      - SNAPSHOTS_DIRECTORY
+      - MONGO_URI
+      - IS_DOCKER=true
+      - CHROMA_HOST=chroma
+      - CHROMA_SSL=false
+      - CHROMA_PORT=8000
+      - CHROMA_API_KEY=${CHROMA_SERVER_AUTHN_CREDENTIALS}
+      - OPENAI_API_KEY
+      - OPENAI_EMBEDDING_MODEL
+    ports:
+      - "${DOC_INDEXER_PORT}:${DOC_INDEXER_PORT}"
+    volumes:
+      - ${DATA_DIR}/snapshots:${SNAPSHOTS_DIRECTORY}
+    depends_on:
+      - mongo
+  log-parser-common:
+    container_name: log-parser
+    profiles: ["app"]
+    environment:
+      - PORT=${LOG_PARSER_PORT}
+    ports:
+      - "${LOG_PARSER_PORT}:${LOG_PARSER_PORT}"
+  dashboard-common:
+    container_name: dashboard
+    profiles: ["app"]
+    # Any new environment variable added here should be added to the docker-entrypoint.sh file in the
+    # dashboard service to ensure it is injected into the frontend application at runtime while
+    # using the build image.
+    environment:
+      - DASHBOARD_API_URL
+      - CHATWOOT_EMAIL_PREFIX
+      - CHATWOOT_WEBTOKEN
+      - CHATWOOT_KEY
+      - MICROSOFT_TEAMS_APP_ID
+    ports:
+      - "${DASHBOARD_PORT}:80"
+  teamsbot-common:
+    container_name: teamsbot
+    profiles: ["app"]
+    environment:
+      - MICROSOFT_APP_ID
+      - MICROSOFT_APP_TYPE
+      - MICROSOFT_APP_TENANT_ID
+      - MICROSOFT_APP_PASSWORD
+      - MICROSOFT_TEAMS_APP_ID
+      - MICROSOFT_APP_SCOPE
+      - MICROSOFT_APP_REDIRECT_URI
+      - API_URL
+      - ENCRYPTION_SALT
+      - METADATA_ENCRYPTION_KEY
+      - MONGO_URI
+      - DASHBOARD_APP_URL
+    ports:
+      - "${MICROSOFT_TEAMS_BOT_PORT}:${MICROSOFT_TEAMS_BOT_PORT}"
+    depends_on:
+      - mongo

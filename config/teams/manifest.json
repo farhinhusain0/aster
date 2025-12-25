@@ -1,0 +1,48 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.20/MicrosoftTeams.schema.json",
+  "version": "1.0.0",
+  "manifestVersion": "1.20",
+  "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxx",
+  "name": {
+    "short": "Aster",
+    "full": "Aster | AI teammate for on-call engineers."
+  },
+  "developer": {
+    "name": "Worklife, Inc.",
+    "mpnId": "",
+    "websiteUrl": "https://aster.so/",
+    "privacyUrl": "https://aster.so/",
+    "termsOfUseUrl": "https://aster.so/"
+  },
+  "description": {
+    "short": "AI teammate for on-call engineers.",
+    "full": "Aster automates root cause analysis and incident response to slash MTTR, reduce alert fatigue and prevent engineer burnout."
+  },
+  "icons": { "outline": "outline.png", "color": "color.png" },
+  "accentColor": "#fad02c",
+  "bots": [
+    {
+      "botId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxx",
+      "scopes": ["team"],
+      "isNotificationOnly": false,
+      "supportsCalling": false,
+      "supportsVideo": false,
+      "supportsFiles": false
+    }
+  ],
+  "validDomains": ["app.aster.so"],
+  "webApplicationInfo": {
+    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxx",
+    "resource": ""
+  },
+  "authorization": {
+    "permissions": {
+      "resourceSpecific": [
+        { "name": "ChannelMessage.Read.Group", "type": "Application" },
+        { "name": "ChannelMessage.Send.Group", "type": "Application" },
+        { "name": "ChatMessage.Send.Chat", "type": "Application" },
+        { "name": "ChatMessage.Read.Chat", "type": "Application" }
+      ]
+    }
+  }
+}

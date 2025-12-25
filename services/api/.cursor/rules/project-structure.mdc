@@ -1,0 +1,214 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# API Service Project Structure
+
+The API service is the core backend service. This guide documents the complete project structure and file organization for this service.
+
+## Main Entry Points
+
+- **Main Application**: [app.ts](mdc:src/app.ts) - Express.js application setup with middleware configuration and router mounting
+- **Server Entry**: [server.ts](mdc:src/server.ts) - Server startup and initialization
+- **Package Configuration**: [package.json](mdc:package.json) - Dependencies, scripts, and project metadata
+
+## Directory Structure Overview
+
+### Core Application
+- **src/app.ts** - Main Express application configuration
+- **src/server.ts** - Server startup and port binding
+- **src/constants.ts** - Application-wide constants
+- **src/index.d.ts** - TypeScript type declarations
+
+### Routing Layer (`src/routers/`)
+All API endpoints are organized by feature:
+- **chat.ts** - Chat and conversation endpoints
+- **webhooks/** - Webhook handlers for external integrations
+- **users.ts** - User management endpoints
+- **integrations.ts** - Third-party integration management
+- **vendors.ts** - Vendor-specific endpoints
+- **invite.ts** - User invitation system
+- **organizations.ts** - Organization management
+- **db-index.ts** - Database indexing endpoints
+- **features.ts** - Feature flag management
+- **jobs.ts** - Background job management
+- **investigation.ts** - Investigation workflow endpoints
+- **llm.ts** - Language model endpoints
+
+### AI Agent System (`src/agent/`)
+- **agent.ts** - Main AI agent implementation
+- **callbacks.ts** - Agent callback handlers
+- **helper.ts** - Agent utility functions
+- **model.ts** - Model configuration and setup
+- **parse.ts** - Input parsing utilities
+- **prompts.ts** - System prompts and templates
+- **vision.ts** - Vision model capabilities
+- **rag/** - Retrieval Augmented Generation components
+  - **chromadb.ts** - ChromaDB vector store integration
+  - **pinecone.ts** - Pinecone vector store integration
+  - **qdrant.ts** - Qdrant vector store integration
+  - **index.ts** - RAG system entry point
+  - **types.ts** - RAG type definitions
+  - **utils.ts** - RAG utility functions
+- **tools/** - Agent tool implementations
+  - **base.ts** - Base tool interface
+  - **constants.ts** - Tool-specific constants
+  - **coralogix/** - Coralogix monitoring tools
+  - **datadog/** - Datadog integration tools
+  - **github/** - GitHub integration tools
+  - **grafana/** - Grafana dashboard tools
+  - **jaeger/** - Jaeger tracing tools
+  - **mongodb/** - MongoDB database tools
+  - **prometheus/** - Prometheus metrics tools
+  - **static/** - Static utility tools
+  - **experts/** - Expert system tools
+  - **dummy.ts** - Testing/mock tools
+
+### External Integrations (`src/clients/`)
+Client libraries for external services:
+- **atlassian/** - Jira/Confluence integration
+- **coralogix/** - Log management platform
+- **datadog.ts** - Monitoring and observability
+- **email/** - Email service integration
+- **github/** - GitHub API integration
+- **grafana/** - Dashboard and metrics
+- **jaeger/** - Distributed tracing
+- **langfuse.ts** - LLM observability
+- **opsgenie/** - Incident management
+- **pagerduty/** - Alert management
+- **redis.ts** - Redis client integration
+- **slack/** - Slack bot integration
+
+### Business Logic (`src/services/`)
+Core business service implementations:
+- **alerts/** - Alert processing and management
+  - **parsers/** - Alert format parsers
+    - **opsgenie.ts** - OpsGenie alert parser
+    - **pagerduty.ts** - PagerDuty alert parser
+- **oauth/** - OAuth authentication flow
+  - **atlassian.ts** - Atlassian OAuth flow
+  - **pagerduty.ts** - PagerDuty OAuth flow
+- **plans/** - Subscription and billing plans
+- **teams/** - Team management functionality
+  - **subscriptions.ts** - Team subscription management
+  - **token.ts** - Team token management
+
+### Infrastructure & Utilities
+
+#### Middleware (`src/middlewares/`)
+- **auth.ts** - Authentication middleware
+- **errors.ts** - Error handling middleware
+- **slack.ts** - Slack-specific middleware
+- **teams.ts** - Teams-specific middleware
+- **webhooks.ts** - Webhook handling middleware
+
+#### Common Utilities (`src/common/`)
+- **secrets.ts** - Secret management utilities
+- **verifier.ts** - Data verification utilities
+
+#### Event System (`src/events/`)
+- **emitter.ts** - Event emission system
+- **listener.ts** - Event listener registration
+- **index.ts** - Event system exports
+- **types.ts** - Event type definitions
+
+#### Background Jobs (`src/jobs/`)
+- **index.ts** - Job queue and processing system
+
+#### Notifications (`src/notifications/`)
+- **index.ts** - Notification system entry
+- **listener.ts** - Notification event listeners
+- **notifier.ts** - Notification delivery system
+
+#### Utilities (`src/utils/`)
+- **arrays.ts** - Array manipulation helpers
+- **dates.ts** - Date/time utilities
+- **ee.ts** - Enterprise edition utilities
+- **errors.ts** - Error handling utilities
+- **http.ts** - HTTP request utilities
+- **llm.ts** - Language model utilities
+- **moderation.ts** - Content moderation utilities
+- **objects.ts** - Object manipulation utilities
+- **promises.ts** - Promise utilities
+- **strings.ts** - String manipulation utilities
+- **token.ts** - Token management utilities
+
+### Type Definitions (`src/types/`)
+- **index.ts** - Common type definitions
+- **internal.ts** - Internal API types
+- **vendors/** - Vendor-specific type definitions
+  - **alertmanager.ts** - Alertmanager types
+  - **coralogix.ts** - Coralogix types
+  - **grafana.ts** - Grafana types
+  - **jaeger.ts** - Jaeger types
+  - **opsgenie.ts** - OpsGenie types
+  - **pagerduty.ts** - PagerDuty types
+
+### Error Handling (`src/errors/`)
+- **index.ts** - Custom error classes and handlers
+
+### Testing (`src/tests/`)
+- **incident.test.ts** - Incident workflow tests
+- **setup.ts** - Test environment setup
+- **services/** - Service-specific test suites
+  - **plan.test.ts** - Subscription plan tests
+
+## Configuration Files
+
+### Development & Build
+- **tsconfig.json** - TypeScript configuration
+- **jest.config.js** - Testing framework configuration
+- **project.json** - Nx workspace project configuration
+
+### Code Quality
+- **.eslintrc.json** - ESLint configuration
+- **.prettierrc.json** - Code formatting rules
+- **.lintstagedrc.json** - Pre-commit hook configuration
+
+### Deployment
+- **Dockerfile** - Container build instructions
+- **.dockerignore** - Docker build context exclusions
+- **.nvmrc** - Node.js version specification
+
+### Documentation
+- **README.md** - Service documentation and setup instructions
+
+## Key Dependencies
+
+### Core Framework
+- **express** - Web application framework
+- **typescript** - Type-safe JavaScript
+
+### AI & ML
+- **langchain** - LLM framework
+- **@pinecone-database/pinecone** - Vector database
+- **chromadb** - Vector store
+- **llamaindex** - RAG framework
+
+### Integrations
+- **@slack/web-api** - Slack app framework
+- **octokit** - GitHub API client
+- **@datadog/datadog-api-client** - Datadog integration
+- **mongoose** - MongoDB ODM
+
+### Utilities
+- **axios** - HTTP client
+- **jsonwebtoken** - JWT handling
+- **nodemailer** - Email delivery
+- **node-cron** - Scheduled tasks
+
+## Development Workflow
+
+### Available Scripts
+- `yarn dev` - Start development server with hot reload
+- `yarn build` - Build TypeScript to JavaScript
+- `yarn test` - Run test suite
+- `yarn lint` - Run code linting
+- `yarn typecheck` - Type checking without compilation
+- `yarn deploy` - Deploy to production environment
+
+### Environment Setup
+- Development environment variables in `.env.dev`
+- Production configuration through deployment scripts
+- Tunnel support for webhook testing via ngrok

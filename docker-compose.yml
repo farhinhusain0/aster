@@ -1,0 +1,64 @@
+services:
+  # Infra services
+  envoy:
+    extends:
+      file: docker-compose.common.yml
+      service: envoy-common
+  mongo:
+    extends:
+      file: docker-compose.common.yml
+      service: mongo-common
+  chroma:
+    extends:
+      file: docker-compose.common.yml
+      service: chroma-common
+  # App services
+  api:
+    extends:
+      file: docker-compose.common.yml
+      service: api-common
+    build:
+      context: "."
+      dockerfile: services/api/Dockerfile
+  slackbot:
+    extends:
+      file: docker-compose.common.yml
+      service: slackbot-common
+    build:
+      context: "."
+      dockerfile: services/slackbot/Dockerfile
+  data-processor:
+    extends:
+      file: docker-compose.common.yml
+      service: data-processor-common
+    build:
+      context: "."
+      dockerfile: services/data-processor/Dockerfile
+  doc-indexer:
+    extends:
+      file: docker-compose.common.yml
+      service: doc-indexer-common
+    build:
+      context: "."
+      dockerfile: services/doc-indexer/Dockerfile
+  log-parser:
+    extends:
+      file: docker-compose.common.yml
+      service: log-parser-common
+    build:
+      context: "."
+      dockerfile: services/log-parser/Dockerfile
+  dashboard:
+    extends:
+      file: docker-compose.common.yml
+      service: dashboard-common
+    build:
+      context: "."
+      dockerfile: services/dashboard/Dockerfile
+  teamsbot:
+    extends:
+      file: docker-compose.common.yml
+      service: teamsbot-common
+    build:
+      context: "."
+      dockerfile: services/teamsbot/Dockerfile

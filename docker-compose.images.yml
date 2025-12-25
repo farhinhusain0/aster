@@ -1,0 +1,78 @@
+services:
+  api:
+    extends:
+      file: docker-compose.common.yml
+      service: api-common
+    image: ${REGISTRY}/aster-api:${VERSION}
+    build:
+      context: "."
+      dockerfile: services/api/Dockerfile
+      tags:
+        - ${REGISTRY}/aster-api:${VERSION}
+        # - ${REGISTRY}/aster-api:latest
+  slackbot:
+    extends:
+      file: docker-compose.common.yml
+      service: slackbot-common
+    image: ${REGISTRY}/aster-slackbot:${VERSION}
+    build:
+      context: "."
+      dockerfile: services/slackbot/Dockerfile
+      tags:
+        - ${REGISTRY}/aster-slackbot:${VERSION}
+        - ${REGISTRY}/aster-slackbot:latest
+  data-processor:
+      extends:
+        file: docker-compose.common.yml
+        service: data-processor-common
+      image: ${REGISTRY}/aster-data-processor:${VERSION}
+      build:
+        context: "."
+        dockerfile: services/data-processor/Dockerfile
+        tags:
+          - ${REGISTRY}/aster-data-processor:${VERSION}
+          - ${REGISTRY}/aster-data-processor:latest
+  log-parser:
+    extends:
+      file: docker-compose.common.yml
+      service: log-parser-common
+    image: ${REGISTRY}/aster-log-parser:${VERSION}
+    build:
+      context: "."
+      dockerfile: services/log-parser/Dockerfile
+      tags:
+        - ${REGISTRY}/aster-log-parser:${VERSION}
+        - ${REGISTRY}/aster-log-parser:latest
+  doc-indexer:
+    extends:
+      file: docker-compose.common.yml
+      service: doc-indexer-common
+    image: ${REGISTRY}/aster-doc-indexer:${VERSION}
+    build:
+      context: "."
+      dockerfile: services/doc-indexer/Dockerfile
+      tags:
+        - ${REGISTRY}/aster-doc-indexer:${VERSION}
+        - ${REGISTRY}/aster-doc-indexer:latest
+  dashboard:
+    extends:
+      file: docker-compose.common.yml
+      service: dashboard-common
+    image: ${REGISTRY}/aster-dashboard:${VERSION}
+    build:
+      context: "."
+      dockerfile: services/dashboard/Dockerfile
+      tags:
+        - ${REGISTRY}/aster-dashboard:${VERSION}
+        - ${REGISTRY}/aster-dashboard:latest
+  teamsbot:
+    extends:
+      file: docker-compose.common.yml
+      service: teamsbot-common
+    image: ${REGISTRY}/aster-teamsbot:${VERSION}
+    build:
+      context: "."
+      dockerfile: services/teamsbot/Dockerfile
+      tags:
+        - ${REGISTRY}/aster-teamsbot:${VERSION}
+        - ${REGISTRY}/aster-teamsbot:latest

@@ -1,0 +1,6 @@
+# Commit Message Hook
+#
+# This script runs after checking a commit message.
+# It is used to enforce commit message conventions (e.g. Conventional Commits).
+#
+# npx --no -- commitlint --edit $1

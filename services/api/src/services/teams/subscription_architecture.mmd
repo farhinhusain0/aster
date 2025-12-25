@@ -1,0 +1,16 @@
+graph TD
+    A[Teams Integration Creation] --> B[OAuth Token Exchange]
+    B --> C[Create Graph Subscription]
+    C --> D[Store in Metadata]
+    
+    E[Cron Job - Every 15 min] --> F[Check All Teams Integrations]
+    F --> G{Subscription Expiring?}
+    G -->|Yes| H[Renew Subscription]
+    G -->|No| I[Log Status]
+    H --> J{Renewal Success?}
+    J -->|Yes| K[Update Metadata]
+    J -->|No| L[Create New Subscription]
+    L --> K
+    
+    M[Integration Deletion] --> N[Delete Graph Subscription]
+    N --> O[Cleanup Integration]

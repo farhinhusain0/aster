@@ -1,0 +1,50 @@
+ARG PYTHON_VERSION=3.10.5-slim
+FROM python:${PYTHON_VERSION} as builder
+
+ENV OS_ENV=linux
+ENV POETRY_VERSION=1.8.4
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    build-essential
+
+RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
+
+COPY packages/py-db packages/py-db
+COPY packages/py-storage packages/py-storage
+COPY services/doc-indexer/pyproject.toml services/doc-indexer/poetry.lock services/doc-indexer/
+
+WORKDIR /app/services/doc-indexer
+RUN poetry config virtualenvs.create true && \
+    poetry config virtualenvs.in-project true && \
+    poetry install --no-root --no-dev --no-interaction
+
+# Install binary dependencies
+RUN poetry run pip install pysqlite3-binary
+
+# Download NLTK data
+ENV NLTK_DATA=/tmp/nltk_cache
+RUN poetry run python -m nltk.downloader punkt stopwords -d ${NLTK_DATA}
+
+COPY services/doc-indexer .
+
+FROM python:${PYTHON_VERSION} as runtime
+
+ENV OS_ENV=linux
+ENV NLTK_DATA=/tmp/nltk_cache
+ENV VIRTUAL_ENV=/app/services/doc-indexer/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+WORKDIR /app/services/doc-indexer
+
+COPY --from=builder ${NLTK_DATA} ${NLTK_DATA}
+COPY --from=builder /app/services/doc-indexer /app/services/doc-indexer
+COPY --from=builder /app/packages /app/packages
+
+# Workaround for ChromaDB sqlite requirement
+RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
+ENV OVERRIDE_PYSQLITE_BINARY=1
+
+CMD ["python", "src/main.py"]

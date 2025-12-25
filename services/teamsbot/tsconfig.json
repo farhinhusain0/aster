@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "baseUrl": "./",
+    "outDir": "dist",
+    "resolveJsonModule": true,
+    "moduleResolution": "nodenext",
+    "module": "NodeNext"
+  },
+  "files": ["./src/index.d.ts"],
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./dist", "./node_modules"]
+}

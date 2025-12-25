@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "log-parser"
+version = "0.0.0"
+description = "Log-parser service"
+authors = ["Aster Team <razin@worklife.so>"]
+license = "AGPL-3.0-or-later"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+logparser3 = "^1.0.4"
+fastapi = "^0.111.1"
+pandas = "^2.2.2"
+uvicorn = "^0.30.3"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

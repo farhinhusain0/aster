@@ -1,0 +1,73 @@
+services:
+  # Infra services
+  envoy:
+    extends:
+      file: docker-compose.common.yml
+      service: envoy-common
+    container_name: aster-quick-envoy
+    volumes:
+      - ./config/envoy/envoy.yaml:/etc/envoy/envoy.yaml
+
+  mongo:
+    extends:
+      file: docker-compose.common.yml
+      service: mongo-common
+    container_name: aster-quick-mongo
+
+  chroma:
+    extends:
+      file: docker-compose.common.yml
+      service: chroma-common
+    container_name: aster-quick-chroma
+
+  # App services
+  api:
+    extends:
+      file: docker-compose.common.yml
+      service: api-common
+    container_name: aster-quick-api
+    image: ghcr.io/asteroncall/aster-api:latest
+
+  data-processor:
+    extends:
+      file: docker-compose.common.yml
+      service: data-processor-common
+    container_name: aster-quick-data-processor
+    image: ghcr.io/asteroncall/aster-data-processor:latest
+
+  doc-indexer:
+    extends:
+      file: docker-compose.common.yml
+      service: doc-indexer-common
+    container_name: aster-quick-doc-indexer
+    image: ghcr.io/asteroncall/aster-doc-indexer:latest
+
+  log-parser:
+    extends:
+      file: docker-compose.common.yml
+      service: log-parser-common
+    container_name: aster-quick-log-parser
+    image: ghcr.io/asteroncall/aster-log-parser:latest
+
+  dashboard:
+    extends:
+      file: docker-compose.common.yml
+      service: dashboard-common
+    container_name: aster-quick-dashboard
+    image: ghcr.io/asteroncall/aster-dashboard:latest
+
+  # use either slackbot or teamsbot
+
+  slackbot:
+    extends:
+      file: docker-compose.common.yml
+      service: slackbot-common
+    container_name: aster-quick-slackbot
+    image: ghcr.io/asteroncall/aster-slackbot:latest
+
+  # teamsbot:
+  #   extends:
+  #     file: docker-compose.common.yml
+  #     service: teamsbot-common
+  #   container_name: aster-quick-teamsbot
+  #   image: ghcr.io/asteroncall/aster-teamsbot:latest

@@ -1,0 +1,1 @@
+export { JiraServiceManagementClient } from "./client";
