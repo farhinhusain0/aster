@@ -1,7 +1,6 @@
 import { GenericModal } from "./Modals";
-import ReactCrop, { type Crop } from "react-image-crop";
-import { useRef, useState } from "react";
-import "react-image-crop/dist/ReactCrop.css";
+import Avatar from "react-avatar-edit";
+import { useState } from "react";
 
 interface PhotoCropperProps {
   open: boolean;
@@ -16,56 +15,53 @@ export const PhotoCropper = ({
   img,
   onCrop,
 }: PhotoCropperProps) => {
-  const [crop, setCrop] = useState<Crop>();
-  const imgRef = useRef<HTMLImageElement>(null);
+  // preview holds a base64 data URL returned by the avatar editor
+  const [preview, setPreview] = useState<string | null>(null);
 
-  const handleCrop = () => {
-    if (!imgRef.current || !crop || !crop.width || !crop.height) return;
+  const handleCrop = async () => {
+    if (!preview) return;
 
-    const image = imgRef.current;
-    const canvas = document.createElement("canvas");
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-    canvas.width = crop.width;
-    canvas.height = crop.height;
-    const ctx = canvas.getContext("2d");
+    // convert base64 dataURL to Blob and then to File
+    try {
+      const res = await fetch(preview);
+      const blob = await res.blob();
+      const file = new File([blob], "cropped.png", {
+        type: blob.type || "image/png",
+      });
+      onCrop(file);
+    } catch (err) {
+      console.error("Error converting cropped preview to file:", err);
+    }
 
-    if (!ctx) return;
+    onClose();
+  };
 
-    ctx.drawImage(
-      image,
-      crop.x * scaleX,
-      crop.y * scaleY,
-      crop.width * scaleX,
-      crop.height * scaleY,
-      0,
-      0,
-      crop.width,
-      crop.height
-    );
-
-    // Convert the canvas to a Blob and pass it onCrop
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const croppedImage = new File([blob], "cropped.png", { type: "image/png" });
-        onCrop(croppedImage);
-      }
-    }, "image/png");
+  const handleClose = () => {
+    setPreview(null);
     onClose();
   };
 
   return (
     <GenericModal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title="Crop image"
       primaryButtonText="Crop"
       onPrimaryButtonClick={handleCrop}
     >
-      <div className="flex items-center justify-center h-full w-full rounded-lg">
-        <ReactCrop crop={crop} onChange={(c) => setCrop(c)} aspect={1}>
-          <img src={img as string} alt="Logo" ref={imgRef} />
-        </ReactCrop>
+      {/* Using [&_svg]:hidden to hide the default close icon */}
+      <div className="flex items-center justify-center h-full w-full rounded-lg [&_svg]:hidden">
+        <Avatar
+          width={400}
+          height={400}
+          onCrop={(previewDataUrl: string) => setPreview(previewDataUrl)}
+          onClose={() => setPreview(null)}
+          src={img as string}
+          exportSize={400}
+          exportMimeType={"image/png"}
+          backgroundColor={"transparent"}
+          exportAsSquare={true}
+        />
       </div>
     </GenericModal>
   );
