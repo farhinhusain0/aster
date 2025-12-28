@@ -21,9 +21,9 @@ export const ForgotPasswordPage = () => {
 
     const promise = forgotPassword(email);
     toast.promise(promise, {
-      loading: "Password resetting.",
-      success: "Password reset.",
-      error: "Password reset failed.",
+      loading: "Sending link.",
+      success: "Password reset link sent.",
+      error: "Failed to send link. Try again.",
     });
     await promise;
     setIsSuccess(true);

@@ -28,9 +28,10 @@ export const styles = sortCx({
   },
   sizes: {
     sm: {
+      // Overriding the untitled ui theme here and chagning in-data-wrapper from 3.5 to 3 and 2.5 to 2 for px and pt respectively.
       root: [
         "gap-1 rounded-lg px-3 py-2 text-sm font-semibold before:rounded-[7px] data-icon-only:p-2",
-        "in-data-input-wrapper:px-3.5 in-data-input-wrapper:py-2.5 in-data-input-wrapper:data-icon-only:p-2.5",
+        "in-data-input-wrapper:px-3 in-data-input-wrapper:py-2 in-data-input-wrapper:data-icon-only:p-2.5",
       ].join(" "),
       linkRoot: "gap-1",
     },

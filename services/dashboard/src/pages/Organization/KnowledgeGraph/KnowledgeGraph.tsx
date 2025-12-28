@@ -182,13 +182,14 @@ export const OrganizationKnowledgeGraphPage = () => {
   const submitLabel = isBasicIndexingInprogress
     ? "Build in-progress"
     : index
-      ? "Rebuild Index"
-      : "Build Index";
+      ? "Rebuild index"
+      : "Build index";
   const confirmMessage = index ? (
     "Are you sure you want to rebuild the index? All of its data will be deleted"
   ) : (
     <span>
-      You will be creating a new index with the selected data sources:{" "}
+      You will be creating a new index with the selected data{" "}
+      {selectedVendors.length === 1 ? "source" : "sources"}:{" "}
       <span className="font-semibold">
         {selectedVendors.slice(0, -1).join(", ")}
       </span>
