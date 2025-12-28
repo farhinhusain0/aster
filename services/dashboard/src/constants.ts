@@ -1,4 +1,4 @@
-// Declare global window.ENV for runtime environment variables
+  // Declare global window.ENV for runtime environment variables
 declare global {
   interface Window {
     ENV?: {
@@ -56,7 +56,7 @@ export const SHOW_CHAT_PAGE = false;
 export const MICROSOFT_TEAMS_APP_ID = getEnvVar('VITE_MICROSOFT_TEAMS_APP_ID');
 
 // Pagination
-export const INVESTIGATIONS_LIMIT = 20;
+export const INVESTIGATIONS_LIMIT = 10;
 
 // 
 export const CHATWOOT_EMAIL_PREFIX = getEnvVar('VITE_CHATWOOT_EMAIL_PREFIX');
