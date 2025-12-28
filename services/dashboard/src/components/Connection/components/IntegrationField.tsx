@@ -75,6 +75,7 @@ interface CommonProps {
   className: string;
   label: string;
   hint: string | undefined;
+  size: "sm" | "md" | "lg";
 }
 
 function InputRenderer(props: Props) {
@@ -90,6 +91,7 @@ function InputRenderer(props: Props) {
     className: "w-full",
     label: "",
     hint: undefined,
+    size: "sm",
   };
 
   if (variant === "modal") {
@@ -149,6 +151,7 @@ function CopyButton({ value }: { value: string }) {
       color="secondary"
       iconLeading={copied ? Check : Copy01}
       onClick={() => copy(value)}
+      size="sm"
     >
       Copy
     </Button>
