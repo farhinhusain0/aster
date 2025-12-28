@@ -23,7 +23,6 @@ COPY packages packages
 # Copy dashboard-specific package files
 # Separate copy commands allow better cache utilization
 COPY services/dashboard/package.json services/dashboard/package.json
-COPY services/dashboard/yarn.lock services/dashboard/yarn.lock
 
 # Install all dependencies
 # --frozen-lockfile ensures consistent installs
