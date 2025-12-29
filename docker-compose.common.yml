@@ -58,7 +58,6 @@ services:
       - HASHICORP_VAULT_URL
       - MONGO_URI
       - DATA_PROCESSOR_URL
-      - PAGERDUTY_SECRET
       - LOG_PARSER_URL
       - DASHBOARD_APP_URL
       - DASHBOARD_API_URL
