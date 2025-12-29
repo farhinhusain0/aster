@@ -1,6 +1,6 @@
 import { FieldConfiguration } from "../types";
 import Typography from "@/components/common/Typography";
-import { Input, InputBase } from "@/components/base/input/input";
+import { Input, InputBase, InputBaseProps } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
 import { InputGroup } from "@/components/base/input/input-group";
 import { Button } from "@/components/base/buttons/button";
@@ -75,7 +75,7 @@ interface CommonProps {
   className: string;
   label: string;
   hint: string | undefined;
-  size: "sm" | "md" | "lg";
+  size: InputBaseProps["size"];
 }
 
 function InputRenderer(props: Props) {
