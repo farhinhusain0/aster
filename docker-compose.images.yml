@@ -1,4 +1,12 @@
 services:
+  mongo:
+    extends:
+      file: docker-compose.common.yml
+      service: mongo-common
+  chroma:
+    extends:
+      file: docker-compose.common.yml
+      service: chroma-common
   api:
     extends:
       file: docker-compose.common.yml
