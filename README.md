@@ -3,7 +3,7 @@
     <picture>
       <source srcset="assets/full-logo.png" media="(prefers-color-scheme: dark)">
       <source srcset="assets/full-logo.png" media="(prefers-color-scheme: light)">
-      <img src="assets/full-logo.png" alt="Aster logo" width="234" height="42">
+      <img src="assets/full-logo.png" alt="Aster logo" width="234" height="auto">
     </picture>
   </a>
 </p>
