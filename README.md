@@ -9,9 +9,11 @@
 </p>
 <p align="center">The open source AI on-call engineer</p>
 
-<a href="https://aster.so">
-  <img src="assets/banner.png" alt="Aster" width="2024" height="1534">
-</a>
+<p align="center">
+  <a href="https://aster.so">
+    <img src="assets/banner.png" alt="Aster" width="512" height="auto">
+  </a>
+</p>
 
 Aster is an AI on-call engineer. Aster integrates with your observability stack, codebase and the tools you work with to autonomously investigate production incidents. Think machines on-call for humans, not the other way around.
 
