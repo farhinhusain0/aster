@@ -17,7 +17,7 @@ services:
       dockerfile: services/api/Dockerfile
       tags:
         - ${REGISTRY}/aster-api:${VERSION}
-        # - ${REGISTRY}/aster-api:latest
+        - ${REGISTRY}/aster-api:latest
   slackbot:
     extends:
       file: docker-compose.common.yml
