@@ -58,15 +58,15 @@ The app uses Docker containers. To run it, you need to have [Docker Desktop](htt
    ```
 
 4. Update these variables:
-  - `OPENAI_API_KEY` - Your OpenAI API key (get it from [here](https://platform.openai.com/account/api-keys))
+    - `OPENAI_API_KEY` - Your OpenAI API key (get it from [here](https://platform.openai.com/account/api-keys))
 
-  - `JWT_SIGNING_SECRET` - Secret for signing JWT tokens (generate with `openssl rand -base64 32`)
+    - `JWT_SIGNING_SECRET` - Secret for signing JWT tokens (generate with `openssl rand -base64 32`)
 
-  - `SLACK_APP_TOKEN` and `SLACK_SIGNING_SECRET` - If you use Slack, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/slack/README.md) to create a Slack app for Aster in your organization 
+    - `SLACK_APP_TOKEN` and `SLACK_SIGNING_SECRET` - If you use Slack, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/slack/README.md) to create a Slack app for Aster in your organization 
 
-  - `MICROSOFT_TEAMSBOT_URL`, `MICROSOFT_TEAMS_APP_ID`, `MICROSOFT_APP_ID`, `MICROSOFT_APP_TENANT_ID` and `MICROSOFT_APP_PASSWORD` - If you use Teams, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/teams/README.md) to create a Teams app for Aster in your organization
+    - `MICROSOFT_TEAMSBOT_URL`, `MICROSOFT_TEAMS_APP_ID`, `MICROSOFT_APP_ID`, `MICROSOFT_APP_TENANT_ID` and `MICROSOFT_APP_PASSWORD` - If you use Teams, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/teams/README.md) to create a Teams app for Aster in your organization
 
-  - `SMTP_CONNECTION_URL` - SMTP server for transactional emails (format: `smtp://username:password@domain:port`)
+    - `SMTP_CONNECTION_URL` - SMTP server for transactional emails (format: `smtp://username:password@domain:port`)
 
 
 
