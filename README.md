@@ -39,38 +39,38 @@ The app uses Docker containers. To run it, you need to have [Docker Desktop](htt
 
 ### Installation
 
-1. Clone the repository:
+Clone the repository:
 
    ```bash
    git clone git@github.com:asteroncall/aster.git && cd aster
    ```
 
-2. Copy the `.env.example` file:
+Copy the `.env.example` file:
 
    ```bash
    cp .env.example .env
    ```
 
-3. Open the .env file in your editor:
+Open the .env file in your editor:
 
    ```bash
    nano .env # or emacs or vscode or vim
    ```
 
-4. Update these variables:
-    - `OPENAI_API_KEY` - Your OpenAI API key (get it from [here](https://platform.openai.com/account/api-keys))
+Update these variables:
+- `OPENAI_API_KEY` - Your OpenAI API key (get it from [here](https://platform.openai.com/account/api-keys))
 
-    - `JWT_SIGNING_SECRET` - Secret for signing JWT tokens (generate with `openssl rand -base64 32`)
+- `JWT_SIGNING_SECRET` - Secret for signing JWT tokens (generate with `openssl rand -base64 32`)
 
-    - `SLACK_APP_TOKEN` and `SLACK_SIGNING_SECRET` - If you use Slack, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/slack/README.md) to create a Slack app for Aster in your organization 
+- `SLACK_APP_TOKEN` and `SLACK_SIGNING_SECRET` - If you use Slack, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/slack/README.md) to create a Slack app for Aster in your organization 
 
-    - `MICROSOFT_TEAMSBOT_URL`, `MICROSOFT_TEAMS_APP_ID`, `MICROSOFT_APP_ID`, `MICROSOFT_APP_TENANT_ID` and `MICROSOFT_APP_PASSWORD` - If you use Teams, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/teams/README.md) to create a Teams app for Aster in your organization
+- `MICROSOFT_TEAMSBOT_URL`, `MICROSOFT_TEAMS_APP_ID`, `MICROSOFT_APP_ID`, `MICROSOFT_APP_TENANT_ID` and `MICROSOFT_APP_PASSWORD` - If you use Teams, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/teams/README.md) to create a Teams app for Aster in your organization
 
-    - `SMTP_CONNECTION_URL` - SMTP server for transactional emails (format: `smtp://username:password@domain:port`)
+- `SMTP_CONNECTION_URL` - SMTP server for transactional emails (format: `smtp://username:password@domain:port`)
 
 
 
-5. Launch the project:
+Launch the project:
 
    ```bash
    docker compose up -d
@@ -90,7 +90,7 @@ The app uses Docker containers. To run it, you need to have [Docker Desktop](htt
    [!Note]
    If you are using Microsoft Teams, make sure to uncomment the teamsbot service in docker-compose.quick-start.yml before running the command.
 
-You should now be able to access Aster through http://localhost:5173. Simply create a user with the email you use for Slack or Teams, and set up your organization.
+You should now be able to access Aster through http://localhost:5173. Simply create an account with the email you use for Slack or Teams, and set up your organization.
 
 ### Updates
 
