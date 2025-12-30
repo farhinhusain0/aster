@@ -19,17 +19,15 @@ Aster is an AI on-call engineer. It integrates with your observability stack, co
 
 ## How it works
 
-1. Clone the repo and start Aster.
+1. Create an account and invite your teammates.
 
-2. Create an account and invite your teammates.
+2. Connect Aster to your observability stack, e.g., Sentry, Datadog.
 
-3. Connect Aster to your observability stack, e.g., Sentry, Datadog.
+3. ⁠Connect Aster to GitHub, Slack/Teams, and any other tools you work with when triaging/troubleshooting, e.g., PagerDuty, Jira.
 
-4. ⁠Connect Aster to GitHub, Slack/Teams, and any other tools you work with when triaging/troubleshooting, e.g., PagerDuty, Jira.
+4. ⁠Create your organization's knowledge graph to ingest data from the tools you connected in the previous step. The knowledge graph allows Aster to search for contextual information that might be relevant to an incident.
 
-5. ⁠Create your organization’s knowledge graph to ingest data from the tools you connected in the previous step. The knowledge graph allows Aster to search for contextual information that might be relevant to an incident.
-
-6. Once these steps are complete, Aster will automatically get added to your Slack/Teams and start investigating alerts for you.
+5. Once these steps are complete, Aster will automatically get added to your Slack/Teams and start investigating alerts for you.
 
 ## Getting started
 
