@@ -89,8 +89,8 @@ Launch the project:
    ```bash
    docker compose -p aster-quick-start down
    ```
-   [!Note]
-   If you are using Microsoft Teams, make sure to uncomment the teamsbot service in docker-compose.quick-start.yml before running the command.
+   >[!Note]
+   >If you are using Microsoft Teams, make sure to uncomment the teamsbot service in docker-compose.quick-start.yml before running the command.
 
 You should now be able to access Aster through http://localhost:5173. Simply create an account with the email you use for Slack or Teams, and set up your organization.
 
