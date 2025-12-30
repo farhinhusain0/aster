@@ -3,13 +3,17 @@
     <picture>
       <source srcset="assets/full-logo.png" media="(prefers-color-scheme: dark)">
       <source srcset="assets/full-logo.png" media="(prefers-color-scheme: light)">
-      <img src="assets/full-logo.png" alt="Aster logo">
+      <img src="assets/full-logo.png" alt="Aster logo" width="234" height="42">
     </picture>
   </a>
 </p>
 <p align="center">The open source AI on-call engineer</p>
 
-[![Aster](assets/banner.png)](https://aster.so)
+<a href="https://aster.so">
+  <img src="assets/banner.png" alt="Aster" width="2024" height="1534">
+</a>
+
+Aster is an AI on-call engineer. Aster integrates with your observability stack, codebase and the tools you work with to autonomously investigate production incidents. Think machines on-call for humans, not the other way around.
 
 
 ## Getting started
