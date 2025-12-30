@@ -33,7 +33,7 @@ Aster is an AI on-call engineer. Aster integrates with your observability stack,
 
 To run Aster, clone the repo and run the app using Docker Compose.
 
-### Prerequisites 📜
+### Prerequisites
 
 The app uses Docker containers. To run it, you need to have [Docker Desktop](https://docs.docker.com/desktop/), which comes with Docker CLI, Docker Engine and Docker Compose.
 
