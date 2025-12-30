@@ -56,7 +56,7 @@ Copy the `.env.example` file:
 Open the .env file in your editor:
 
    ```bash
-   nano .env # or emacs or vscode or vim
+   vscode .env # or emacs or vim or nano
    ```
 
 Update these variables:
