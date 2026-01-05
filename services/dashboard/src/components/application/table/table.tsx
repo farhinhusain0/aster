@@ -193,9 +193,8 @@ const TableHeader = <T extends object>({
           "relative bg-secondary",
           size === "sm" ? "h-9" : "h-11",
 
-          // Row border—using an "after" pseudo-element to avoid the border taking up space.
-          bordered &&
-            "[&>tr>th]:after:pointer-events-none [&>tr>th]:after:absolute [&>tr>th]:after:inset-x-0 [&>tr>th]:after:bottom-0 [&>tr>th]:after:h-px [&>tr>th]:after:bg-border-secondary [&>tr>th]:focus-visible:after:bg-transparent",
+          // Row border: use an actual bottom border on the header to match the sidebar.
+          bordered && "border-b border-secondary",
 
           typeof className === "function" ? className(state) : className,
         )
@@ -322,8 +321,8 @@ const TableRow = <T extends object>({
           size === "sm" ? "h-14" : "h-18",
           highlightSelectedRow && "selected:bg-secondary",
 
-          // Row border—using an "after" pseudo-element to avoid the border taking up space.
-          "[&>td]:after:absolute [&>td]:after:inset-x-0 [&>td]:after:bottom-0 [&>td]:after:h-px [&>td]:after:w-full [&>td]:after:bg-border-secondary last:[&>td]:after:hidden [&>td]:focus-visible:after:opacity-0 focus-visible:[&>td]:after:opacity-0",
+          // Row border: use a real bottom border on rows to match the sidebar.
+          "border-b border-secondary last:border-b-0",
 
           typeof className === "function" ? className(state) : className,
         )

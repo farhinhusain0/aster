@@ -137,54 +137,66 @@ function InvestigationDetailsLeftPanel() {
 
   return (
     <div>
-      <Typography variant="xl/semibold" className="text-primary mb-1">
+      <Typography variant="xl/semibold" className="text-primary mb-5">
         {title}
       </Typography>
-      <Typography variant="sm/medium" className="text-primary mb-5">
-        Last updated:{" "}
-        <span className="decoration-dotted underline underline-offset-4 decoration-gray-400 font-medium text-primary inline-flex items-center gap-1 whitespace-nowrap ml-1">
-          <Tooltip title={exactTime}>
-            <TooltipTrigger className="group relative inline-flex cursor-pointer items-center gap-1">
-              {relativeTime}
-            </TooltipTrigger>
-          </Tooltip>
-        </span>
-      </Typography>
 
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 ">
-          <div className="flex items-center gap-1">
+      <div className="flex-1 rounded-2xl border border-gray-200 p-4 mb-5">
+        <div className="flex items-center gap-2">
+          <Typography variant="sm/medium" className="text-primary">
+            Source:
+          </Typography>
+
+          <div
+            className="inline-flex gap-2 text-sm "
+            // className="text-sm text-link inline-flex gap-1"
+            // href={incidentExternalLink}
+            // target="_blank"
+          >
+            <img
+              src={sourceLogo}
+              alt={source}
+              className="w-5 h-5 rounded-md object-contain"
+            />
             <Typography variant="sm/medium" className="text-primary">
-              Source:
+              {source}
             </Typography>
 
-            <div
-              className="inline-flex gap-1 text-sm"
-              // className="text-sm text-link inline-flex gap-1"
-              // href={incidentExternalLink}
-              // target="_blank"
-            >
-              <img
-                src={sourceLogo}
-                alt={source}
-                className="w-5 h-5 rounded-md object-contain"
-              />
-              <Typography variant="sm/medium" className="text-primary">
-                {source}
-              </Typography>
-
-              {/* <LinkExternal01 size={14} className="mt-0.5" /> */}
-            </div>
+            {/* <LinkExternal01 size={14} className="mt-0.5" /> */}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <StatusBadge statusText={statusText} />
-          <PriorityBadge priority={priority} />
+        <Divider className="mt-3 mb-3" />
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 ">
+            <Typography variant="sm/medium" className="text-primary">
+              Last updated:{" "}
+              <span className="decoration-dotted underline underline-offset-4 decoration-gray-400 font-medium text-primary inline-flex items-center gap-1 whitespace-nowrap ml-1">
+                <Tooltip title={exactTime}>
+                  <TooltipTrigger className="group relative inline-flex cursor-pointer items-center gap-1">
+                    {relativeTime}
+                  </TooltipTrigger>
+                </Tooltip>
+              </span>
+            </Typography>
+          </div>
+
+          <div className="flex items-center gap-2 ">
+            <Typography variant="sm/medium" className="text-primary">
+              Status:
+            </Typography>
+            <StatusBadge statusText={statusText} />
+          </div>
+
+          <div className="flex items-center gap-2 ">
+            <Typography variant="sm/medium" className="text-primary">
+              Priority:
+            </Typography>
+            <PriorityBadge priority={priority} />
+          </div>
         </div>
       </div>
-
-      <Divider className="mt-4 mb-5" />
 
       <div className="flex gap-3 flex-col justify-start items-start mb-5">
         <Typography variant="md/semibold" className="text-primary">
@@ -212,7 +224,11 @@ function InvestigationDetailsLeftPanel() {
                 <Link
                   className="w-full"
                   key={check._id}
-                  to={`/investigations/${id}/${check._id}`}
+                  to={
+                    checkId === check._id
+                      ? `/investigations/${id}`
+                      : `/investigations/${id}/${check._id}`
+                  }
                 >
                   <div
                     className={cx(
@@ -290,7 +306,7 @@ function InvestigationDetailsRightPanel() {
     }
 
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         {avatar}
         <Typography variant="sm/medium" className="text-primary">
           {text}
@@ -307,7 +323,7 @@ function InvestigationDetailsRightPanel() {
             <div className="flex items-center justify-between gap-4">
               <Typography variant="xl/semibold">{getHeader()}</Typography>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Typography variant="sm/medium" className="text-primary">
                 Source:
               </Typography>
