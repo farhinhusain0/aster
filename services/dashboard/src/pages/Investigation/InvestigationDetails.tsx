@@ -7,7 +7,7 @@ import { useInvestigation } from "@/api/queries/investigations";
 import useDocumentTitle from "@/hooks/documentTitle";
 
 function InvestigationDetails() {
-  useDocumentTitle('Investigation details | Aster');
+  useDocumentTitle("Investigation details | Aster");
   const { id, checkId } = useParams();
   const { data: investigation, isPending } = useInvestigation(id || "");
 
@@ -21,10 +21,14 @@ function InvestigationDetails() {
     <div className=" w-256 mx-auto">
       <div className="flex gap-10">
         <div className="flex-1 min-w-0 max-w-140">
-        <InvestigationDetailsLeftPanel />
+          <InvestigationDetailsLeftPanel />
         </div>
 
-        {checkId && <div className="flex-shrink-0 "><InvestigationDetailsRightPanel /></div>}
+        {checkId && (
+          <div className="flex-shrink-0 ">
+            <InvestigationDetailsRightPanel />
+          </div>
+        )}
       </div>
     </div>
   );
