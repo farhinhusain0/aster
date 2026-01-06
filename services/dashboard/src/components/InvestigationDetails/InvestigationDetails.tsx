@@ -172,7 +172,7 @@ function InvestigationDetailsLeftPanel() {
           <div className="flex items-center gap-2 ">
             <Typography variant="sm/medium" className="text-primary">
               Last updated:{" "}
-              <span className="decoration-dotted underline underline-offset-4 decoration-gray-400 font-medium text-primary inline-flex items-center gap-1 whitespace-nowrap ml-1">
+              <span className=" font-medium text-primary inline-flex items-center gap-1 whitespace-nowrap ml-1">
                 <Tooltip title={exactTime}>
                   <TooltipTrigger className="group relative inline-flex cursor-pointer items-center gap-1">
                     {relativeTime}
