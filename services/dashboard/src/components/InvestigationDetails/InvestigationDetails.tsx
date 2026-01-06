@@ -242,12 +242,12 @@ function InvestigationDetailsLeftPanel() {
                       <Badge
                         type="color"
                         size="md"
-                        className="font-semibold text-primary"
+                        className="font-medium text-primary"
                       >
                         {check.source === "github" ? "Changes" : "Application"}
                       </Badge>
                       <Typography
-                        variant="sm/medium"
+                        variant="sm/normal"
                         className="text-primary line-clamp-1 max-w-[75%]"
                       >
                         {check?.result?.summary}
