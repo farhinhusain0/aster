@@ -12,17 +12,20 @@
   "description": "",
   "devDependencies": {
     "@microsoft/microsoft-graph-types": "^2.40.0",
+    "@types/html-to-text": "^9.0.4",
     "@types/node": "^22.14.0",
     "@types/restify": "^8.5.12",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@aster/db": "*",
+    "@aster/utils": "*",
     "@azure/identity": "^4.12.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "@aster/db": "*",
     "botbuilder": "^4.23.3",
     "dotenv-cli": "^7.4.2",
+    "html-to-text": "^9.0.5",
     "isomorphic-fetch": "^3.0.0",
     "mongoose": "^8.0.2",
     "mongoose-field-encryption": "^7.0.1",

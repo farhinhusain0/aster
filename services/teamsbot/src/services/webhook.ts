@@ -16,6 +16,7 @@ import { getCompletion, updateIncident, updateInvestigation } from "../api";
 import { getIncidentTextFromMessage } from "./teams";
 import { getInvestigationCard } from "../TeamsComponents";
 import { getJSMIncidentIdFromURL, getJSMURLFromText } from "../utils/jsm";
+import { LangChainMessageRoles } from "@aster/utils";
 
 export async function handleTeamsSubscriptionNotification(
   req: Request,
@@ -58,7 +59,6 @@ export async function handleTeamsSubscriptionNotification(
         const graphClient = createGraphClientV2(tenantId);
         message = await graphClient
           .api(getMessageEndpoint(teamId, channelId, messageId))
-          .expand("replies")
           .get();
       } catch (error) {
         // This is expected to happen for messages that are replies to other messages
@@ -119,7 +119,7 @@ export async function handleTeamsSubscriptionNotification(
           const response = await getCompletion({
             messages: [
               {
-                role: "user",
+                role: LangChainMessageRoles.user,
                 content:
                   command +
                   "\n\n Any code formatting should be done in a way that is compatible with Teams Adaptive Cards.",

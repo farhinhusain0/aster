@@ -10,12 +10,16 @@ import {
   getAuthenticatedWelcomeCard,
   getUnauthenticatedWelcomeCard,
 } from "./TeamsComponents";
-import { integrationModel, TeamsIntegration } from "@aster/db";
+import { integrationModel, TeamsIntegration, VendorName } from "@aster/db";
+import { LangChainMessageRoles } from "@aster/utils";
+import { createGraphClientV2 } from "./client";
 import {
-  getIncidentTextFromMessage,
-  getTeamsMessageById,
-} from "./services/teams";
+  getMessageEndpoint,
+  getMessageRepliesEndpoint,
+} from "./utils/graphEndpoints";
 import { getConversationParentMessageId } from "./utils/teams";
+import { convert } from "html-to-text";
+import { convertAdaptiveCardContentToText } from "./services/teams";
 
 class TeamsBot extends ActivityHandler {
   constructor() {
@@ -30,32 +34,10 @@ class TeamsBot extends ActivityHandler {
           await next();
           return;
         } else {
-          let command = TurnContext.removeRecipientMention(context.activity);
-          const isInvestigation = command.includes(
-            "Start initial investigation",
-          );
-
-          if (isInvestigation) {
-            const parentMessage = await getTeamsMessageById(
-              getConversationParentMessageId(
-                context.activity.conversation.id.toString(),
-              ),
-              context.activity.channelData.channel.id,
-              context.activity.channelData.tenant.id,
-            );
-            const { text } = getIncidentTextFromMessage(parentMessage);
-            command = text;
-          }
-
           const response = await getCompletion({
-            messages: [
-              {
-                role: "user",
-                content: command,
-              },
-            ],
+            messages: await this.parseMessagesForAster(context),
             tenantId: context.activity.channelData.tenant.id,
-            isInvestigation,
+            isInvestigation: false,
           });
 
           console.log("\n=============Response=============\n");
@@ -144,9 +126,12 @@ class TeamsBot extends ActivityHandler {
   }
 
   private getBotMentionedStatus = async (activity: Activity) => {
-    const integration = (await integrationModel.getIntegrationByName("Teams", {
-      "metadata.tenantId": activity.channelData.tenant.id,
-    })) as TeamsIntegration;
+    const integration = (await integrationModel.getIntegrationByName(
+      VendorName.Teams,
+      {
+        "metadata.tenantId": activity.channelData.tenant.id,
+      },
+    )) as TeamsIntegration;
 
     if (!integration) {
       return false;
@@ -160,6 +145,105 @@ class TeamsBot extends ActivityHandler {
     );
 
     return Boolean(mention);
+  };
+
+  private parseMessagesForAster = async (context: TurnContext) => {
+    // Get all messages (main message + replies) from the activity
+    const allMessages = await this.getAllMessagesFromActivity(context);
+
+    // Convert messages to the format expected by Aster
+    const messages = allMessages.map((message) => {
+      // Determine if the message is from a bot (assistant) or user
+      // Messages from bots have from.application, messages from users have from.user
+      const isFromBot = !!message.from?.application;
+
+      let content = "";
+      if (message.attachments?.[0]?.content) {
+        content = convertAdaptiveCardContentToText(
+          message.attachments?.[0]?.content,
+        );
+      } else {
+        content = convert(message.body?.content || message.body?.text || "");
+      }
+
+      return {
+        role: isFromBot
+          ? LangChainMessageRoles.assistant
+          : LangChainMessageRoles.user,
+        content,
+      };
+    });
+
+    return messages;
+  };
+
+  private getAllMessagesFromActivity = async (context: TurnContext) => {
+    try {
+      const activity = context.activity;
+      const tenantId = activity.channelData?.tenant?.id;
+      const integration = await integrationModel.getIntegrationByName(
+        VendorName.Teams,
+        {
+          "metadata.tenantId": tenantId,
+        },
+      );
+
+      const { metadata } = integration as TeamsIntegration;
+      const { aadGroupId, channelId } = metadata;
+
+      if (!tenantId || !aadGroupId || !channelId) {
+        console.error("Missing required IDs from activity:", {
+          tenantId,
+          aadGroupId,
+          channelId,
+        });
+        return [];
+      }
+
+      const conversationId = activity.conversation?.id ?? "";
+      const messageId = getConversationParentMessageId(conversationId);
+
+      if (!messageId) {
+        console.error("No message ID found in activity");
+        return [];
+      }
+
+      // Create Graph client and fetch message with replies
+      const graphClient = createGraphClientV2(tenantId);
+      const message = await graphClient
+        .api(getMessageEndpoint(aadGroupId, channelId, messageId))
+        .get();
+
+      const replies = await graphClient
+        .api(getMessageRepliesEndpoint(aadGroupId, channelId, messageId))
+        .get();
+
+      // Collect all messages: main message + all replies
+      const allMessages = [];
+
+      // Add the main message
+      if (message) {
+        allMessages.push(message);
+      }
+
+      // Add all replies if they exist
+      if (replies && Array.isArray(replies.value)) {
+        allMessages.push(...replies.value);
+      }
+
+      // Sort messages by creation time to maintain chronological order
+      allMessages.sort((a, b) => {
+        const timeA = new Date(a.createdDateTime || 0).getTime();
+        const timeB = new Date(b.createdDateTime || 0).getTime();
+        return timeA - timeB;
+      });
+
+      return allMessages;
+    } catch (error) {
+      console.error("Error fetching messages from activity:", error);
+      // Return empty array on error, fallback to just the current command
+      return [];
+    }
   };
 }
 

@@ -1,7 +1,10 @@
 import { integrationModel, TeamsIntegration, VendorName } from "@aster/db";
 import { createGraphClient } from "../client";
 import { TeamsAdaptiveCardBodyItem } from "../types";
-import { getIncidentIdFromJSMTitle, getIncidentIdFromPagerDutyTitle } from "../utils/adaptiveCard";
+import {
+  getIncidentIdFromJSMTitle,
+  getIncidentIdFromPagerDutyTitle,
+} from "../utils/adaptiveCard";
 
 export async function getTeamsMessageById(
   messageId: string,
@@ -148,5 +151,67 @@ export function getIncidentTextFromMessage(message: any) {
   } catch (error) {
     console.error("Error extracting incident text:", error);
     throw error;
+  }
+}
+
+export function getTextsFromAttachments(attachments: any[]) {
+  if (!Array.isArray(attachments)) {
+    return "";
+  }
+
+  return attachments
+    .map((attachment) => convertAdaptiveCardContentToText(attachment?.content))
+    .filter((text) => Boolean(text))
+    .join("\n");
+}
+
+export function convertAdaptiveCardContentToText(content: any): string {
+  try {
+    const card =
+      typeof content === "string" && content.trim().startsWith("{")
+        ? JSON.parse(content)
+        : content;
+
+    if (!card || typeof card !== "object") {
+      return "";
+    }
+
+    const texts: string[] = [];
+
+    const walkAdaptiveCardNode = (node: any) => {
+      if (!node) return;
+      if (Array.isArray(node)) {
+        node.forEach(walkAdaptiveCardNode);
+        return;
+      }
+      if (typeof node !== "object") return;
+
+      if (node.type === "TextBlock" && node.text) {
+        texts.push(String(node.text));
+      }
+
+      if (node.type === "FactSet" && Array.isArray(node.facts)) {
+        node.facts.forEach((fact: any) => {
+          if (fact?.title || fact?.value) {
+            texts.push(
+              [fact.title, fact.value].filter(Boolean).join(" ").trim(),
+            );
+          }
+        });
+      }
+
+      // Walk nested properties to pick up deeper TextBlocks/FactSets
+      Object.keys(node).forEach((key) => {
+        if (key === "type") return;
+        walkAdaptiveCardNode(node[key]);
+      });
+    };
+
+    walkAdaptiveCardNode(card);
+
+    return texts.join("\n").trim();
+  } catch (error) {
+    console.error("Error converting attachment content:", error);
+    return "";
   }
 }
