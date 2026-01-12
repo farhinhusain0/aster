@@ -10,8 +10,7 @@ import {
 import Typography from "@/components/common/Typography";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
-import { Trash01 } from "@untitledui/icons";
-import { cx } from "@/utils/cx";
+import { GitBranch02, Trash01 } from "@untitledui/icons";
 import Divider from "@/components/common/Divider";
 
 const fieldsConfigurations: FieldConfiguration[] = [
@@ -117,6 +116,19 @@ function GitHubCustomFields({
   onChange: (value: string | any, key: string, type: string) => void;
 }) {
   return customFieldsConfigurations.map((config) => {
+    const { key, type } = config;
+    const isConnected = !!data?.[type]?.[key];
+
+    if (isConnected) {
+      return (
+        <ReadOnlyGitHubCustomFieldItem
+          key={config.key}
+          data={data}
+          config={config}
+        />
+      );
+    }
+
     return (
       <GitHubCustomFieldItem
         key={config.key}
@@ -143,7 +155,6 @@ function GitHubCustomFieldItem({
   const { key, input, label, type } = config;
   const currentValue = data?.[type]?.[key] || formData?.[key] || [];
   const shape = input?.shape || [];
-  const isConnected = !!data?.[type]?.[key];
 
   useEffect(() => {
     if (currentValue.length === 0) {
@@ -185,21 +196,13 @@ function GitHubCustomFieldItem({
 
   return (
     <div>
-      {!isConnected && (
-        <Typography variant="md/medium" className="text-secondary mb-2">
-          {label}
-        </Typography>
-      )}
+      <Typography variant="md/medium" className="text-secondary mb-2">
+        {label}
+      </Typography>
       <IntegrationFieldSectionWrapper key={key} label={label}>
         <div className={"flex flex-col gap-4 w-full"}>
           {currentValue?.map?.((item: any, index: number) => (
-            <div
-              className={cx(
-                "flex gap-2 w-full",
-                isConnected ? "flex-col" : "flex-row",
-              )}
-              key={index}
-            >
+            <div className={"flex gap-4 w-full flex-row"} key={index}>
               {shape.map((field: any) => (
                 <IntegrationFieldInputRenderer
                   key={`${index}-${field.key}`}
@@ -216,7 +219,7 @@ function GitHubCustomFieldItem({
                   }
                 />
               ))}
-              {currentValue.length > 1 && !isConnected && (
+              {currentValue.length > 1 && (
                 <ButtonUtility
                   size="sm"
                   color="tertiary"
@@ -225,20 +228,55 @@ function GitHubCustomFieldItem({
                   onClick={() => handleRemove(index)}
                 />
               )}
-
-              {currentValue.length !== index + 1 && isConnected && <Divider />}
             </div>
           ))}
 
-          {!isConnected && (
-            <div className="flex flex-row gap-4 w-full">
-              <Button color="secondary" size="sm" onClick={handleAddMore}>
-                Add more
-              </Button>
-            </div>
-          )}
+          <div className="flex flex-row gap-4 w-full">
+            <Button color="secondary" size="sm" onClick={handleAddMore}>
+              Add more
+            </Button>
+          </div>
         </div>
       </IntegrationFieldSectionWrapper>
     </div>
+  );
+}
+
+function ReadOnlyGitHubCustomFieldItem({
+  config,
+  data,
+}: {
+  data: any;
+  config: FieldConfiguration;
+}) {
+  const { key, type } = config;
+  const currentValue = data?.[type]?.[key] || [];
+
+  return (
+    <IntegrationFieldSectionWrapper key={key} label={"Synced Repositories"}>
+      <div className={"flex flex-col gap-5 w-full"}>
+        {currentValue.map((item: any, index: number) => {
+          const [repoName, branchName] = item.repoName.split("/");
+          return (
+            <div
+              className={"rounded-lg border border-secondary flex flex-col"}
+              key={index}
+            >
+              <div className="flex items-center gap-0 px-3 py-2 text-disabled">
+                <Typography variant="md/normal">{repoName}/</Typography>
+                <Typography variant="md/semibold">{branchName}</Typography>
+              </div>
+              <Divider />
+              <div className="flex items-center gap-1 px-3 py-2">
+                <GitBranch02 size={16} className="text-disabled" />
+                <Typography variant="md/normal" className="text-disabled font-mono">
+                  {item.branchName}
+                </Typography>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </IntegrationFieldSectionWrapper>
   );
 }
