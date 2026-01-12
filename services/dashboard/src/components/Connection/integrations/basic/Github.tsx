@@ -195,7 +195,7 @@ function GitHubCustomFieldItem({
           {currentValue?.map?.((item: any, index: number) => (
             <div
               className={cx(
-                "flex gap-4 w-full",
+                "flex gap-2 w-full",
                 isConnected ? "flex-col" : "flex-row",
               )}
               key={index}
