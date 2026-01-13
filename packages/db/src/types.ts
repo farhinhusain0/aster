@@ -388,6 +388,9 @@ export interface JiraServiceManagementIntegration extends BaseConnection {
   credentials: {
     apiKey: string;
   };
+  metadata: {
+    siteUrl: string;
+  };
 }
 
 export type IIntegration =
