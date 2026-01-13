@@ -77,6 +77,29 @@ npx dotenv-cli -o -e .env -e services/api/.env node packages/db/migrations/<migr
 npx dotenv-cli -o -e .env -e services/api/.env node packages/db/migrations/add-htmlUrl-in-asterAdded-object-inside-jsmDetails.js down
 ```
 
+### Running Migrations Inside Docker
+
+If you are running Aster via Docker (for example with `docker compose up -d`), you can execute migrations from inside the `api` service container so they use the same environment and network as the app.
+
+**Examples:**
+
+- **Run `up` (default) inside the `api` container:**
+
+  ```bash
+  docker exec -it <api_container_id> sh
+  cd /app
+  node packages/db/migrations/add-htmlUrl-in-asterAdded-object-inside-jsmDetails.js up
+  ```
+
+- **Explicitly run `down` inside the `api` container:**
+
+  ```bash
+  docker exec -it <api_container_id> sh
+  cd /app
+  node packages/db/migrations/add-htmlUrl-in-asterAdded-object-inside-jsmDetails.js down
+  ```
+
+
 ## Command Breakdown
 
 The migration command structure:
