@@ -4,6 +4,7 @@ import {
   organizationModel,
   integrationModel,
   IIntegration,
+  VendorName,
 } from "@aster/db";
 import { checkAuth, getDBUser } from "../middlewares/auth";
 import { catchAsync } from "../utils/errors";

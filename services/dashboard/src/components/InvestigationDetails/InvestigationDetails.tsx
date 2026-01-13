@@ -134,6 +134,9 @@ function InvestigationDetailsLeftPanel() {
   const source = pdDetails ? "PagerDuty" : "JSM ";
   const isPagerDuty = !!pdDetails;
   const sourceLogo = isPagerDuty ? PagerDutyLogo : JiraLogo;
+  const incidentExternalLink = isPagerDuty
+    ? pdDetails?.html_url
+    : jsmDetails?.asterAdded?.htmlUrl;
 
   return (
     <div>
@@ -147,23 +150,24 @@ function InvestigationDetailsLeftPanel() {
             Source:
           </Typography>
 
-          <div
-            className="inline-flex gap-2 text-sm "
-            // className="text-sm text-link inline-flex gap-1"
-            // href={incidentExternalLink}
-            // target="_blank"
+          <a
+            className="text-sm text-link inline-flex gap-2 items-center"
+            href={incidentExternalLink}
+            target="_blank"
           >
             <img
               src={sourceLogo}
               alt={source}
               className="w-5 h-5 rounded-md object-contain"
             />
-            <Typography variant="sm/medium" className="text-primary">
-              {source}
-            </Typography>
-
-            {/* <LinkExternal01 size={14} className="mt-0.5" /> */}
-          </div>
+            <div className="flex items-center gap-2">
+              {/* leading-[19px] is to optically match the alignment of the source logo */}
+              <Typography variant="sm/medium" className="text-primary leading-[19px]">
+                {source}
+              </Typography>
+              <LinkExternal01 size={14} className="mt-0.5" />
+            </div>
+          </a>
         </div>
 
         <Divider className="mt-3 mb-3" />
