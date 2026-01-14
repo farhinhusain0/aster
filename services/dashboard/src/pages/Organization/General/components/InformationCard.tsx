@@ -35,7 +35,7 @@ export const InformationCard = ({ organization }: any) => {
 
     const promise = updateOrganization(
       {
-        name,
+        data: { name },
         logo: selectedAvatarFile || organization.logo,
         organizationId: organization._id,
       },

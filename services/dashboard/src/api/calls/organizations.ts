@@ -27,7 +27,7 @@ export const createOrganization = async (
 
 export const updateOrganization = async (
   axios: AxiosInstance,
-  logo: File | null,
+  logo: File | null | undefined,
   organization: any,
   orgId: string,
 ) => {
