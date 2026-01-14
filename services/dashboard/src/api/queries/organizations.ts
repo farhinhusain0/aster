@@ -24,19 +24,22 @@ export const useCreateOrg = () => {
   });
 };
 
-export const useUpdateOrg = () => {
+export interface UpdateOrganizationData {
+  data?: {
+    name?: string;
+  };
+  logo?: File | null;
+  organizationId: string;
+}
+
+export const useUpdateOrg = <
+  TData extends UpdateOrganizationData = UpdateOrganizationData,
+>() => {
   const axios = useAxios();
   return useMutation({
     mutationKey: ["updateOrganization"],
-    mutationFn: ({
-      name,
-      logo,
-      organizationId,
-    }: {
-      name: string;
-      logo: File | null;
-      organizationId: string;
-    }) => updateOrganization(axios, logo, { name }, organizationId),
+    mutationFn: ({ data, logo, organizationId }: TData) =>
+      updateOrganization(axios, logo, data, organizationId),
   });
 };
 
