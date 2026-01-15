@@ -166,7 +166,7 @@ export function getUserRouter(options: RouterOptions = {}) {
         passwordResetStatus: null,
       });
 
-      const accessToken = generateToken(user);
+      const accessToken = await generateToken(user);
       return res.status(200).json({ token: accessToken });
     }),
   );
@@ -194,7 +194,7 @@ export function getUserRouter(options: RouterOptions = {}) {
 
       //compare password with hashedpassword
       if (user && (await comparePassword(password, user.password))) {
-        const accessToken = generateToken(user);
+        const accessToken = await generateToken(user);
         res.status(200).json({ token: accessToken });
       } else {
         res.status(401);
@@ -273,7 +273,7 @@ export function getUserRouter(options: RouterOptions = {}) {
           { new: true },
         );
 
-        const accessToken = generateToken(user);
+        const accessToken = await generateToken(user);
 
         return res.status(200).json({ token: accessToken });
       } catch (error) {
