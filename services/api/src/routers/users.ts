@@ -11,6 +11,7 @@ import {
   PasswordResetStatus,
   planModel,
   planStateModel,
+  authTokenModel,
 } from "@aster/db";
 import type { IUser } from "@aster/db";
 import { FilterQuery } from "mongoose";
@@ -94,15 +95,11 @@ export function getUserRouter(options: RouterOptions = {}) {
         const html = getEmailVerificationEmail(token);
         const client = new EmailClient(smtpConnectionUrl);
         await client.sendEmail({ to: email, subject, html });
-      }
+      } else if (!smtpConnectionUrl && token) {
+        const redirectUrl = `${process.env.DASHBOARD_APP_URL}/callback/signup?token=${token}`;
 
-      else if (!smtpConnectionUrl && token){
-        const redirectUrl = `${process.env.DASHBOARD_APP_URL}/callback/signup?token=${token}`
-
-        return res.status(200).json({ success: true, redirectUrl })
-      }
-      
-      else {
+        return res.status(200).json({ success: true, redirectUrl });
+      } else {
         throw AppError({
           message: "Failed to send email verification email",
           statusCode: 500,
@@ -166,7 +163,7 @@ export function getUserRouter(options: RouterOptions = {}) {
         passwordResetStatus: null,
       });
 
-      const accessToken = generateToken(user);
+      const accessToken = await generateToken(user);
       return res.status(200).json({ token: accessToken });
     }),
   );
@@ -194,7 +191,7 @@ export function getUserRouter(options: RouterOptions = {}) {
 
       //compare password with hashedpassword
       if (user && (await comparePassword(password, user.password))) {
-        const accessToken = generateToken(user);
+        const accessToken = await generateToken(user);
         res.status(200).json({ token: accessToken });
       } else {
         res.status(401);
@@ -273,7 +270,7 @@ export function getUserRouter(options: RouterOptions = {}) {
           { new: true },
         );
 
-        const accessToken = generateToken(user);
+        const accessToken = await generateToken(user);
 
         return res.status(200).json({ token: accessToken });
       } catch (error) {
@@ -302,9 +299,25 @@ export function getUserRouter(options: RouterOptions = {}) {
     }),
   );
 
+  router.get(
+    "/validate-token",
+    catchAsync(async (req: Request, res: Response) => {
+      return res.status(200).json({ valid: true });
+    }),
+  );
+
   router.get("/me", getDBUser, async (req: Request, res: Response) => {
     return res.status(200).json(req.user);
   });
+
+  router.post(
+    "/logout",
+    catchAsync(async (req: Request, res: Response) => {
+      const userId = req.decodedUser?.id;
+      await authTokenModel.delete({ user: userId });
+      return res.status(200).json({ message: "Logged out successfully" });
+    }),
+  );
 
   router.post(
     "/change-password",
