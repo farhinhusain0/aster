@@ -13,7 +13,7 @@ async function init() {
   await connectAndInitDb(mongoUri, "api");
 
   // Seed quick-start demo user if enabled
-  if (process.env.QUICK_START === "true") {
+  if (process.env.SEED_QUICK_START_DATA === "true") {
     await seedQuickStartUser();
   }
 
