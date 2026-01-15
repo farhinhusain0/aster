@@ -87,7 +87,8 @@ Launch the project:
    | Email    | `linus@aster.so`             |
    | Password | `@justForFun1991`            |
 
-   If you don't want the quick start seeding then set the `SEED_QUICK_START_DATA` enviorment variable to `false` in the `.env` file.
+   >[!Note]
+   >If you don't want the quick start seeding then add and set the `SEED_QUICK_START_DATA` enviorment variable to `false` in the `.env` file.
 
    To stop the quick-start containers:
 
