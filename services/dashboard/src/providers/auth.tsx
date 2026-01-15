@@ -4,7 +4,7 @@ import { authApi } from "../api/calls/auth";
 interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<{ success: boolean; redirectUrl?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -63,9 +63,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setError(null);
       setIsLoading(true);
-      await authApi.register({ email, password, name });
+      const data = await authApi.register({ email, password, name });
 
-      return true;
+      return data;
     } catch (error) {
       setError("Registration failed. Please try again.");
       throw error;
