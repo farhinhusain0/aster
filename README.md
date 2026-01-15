@@ -82,9 +82,9 @@ Launch the project:
 
    The quick-start setup automatically creates a demo user you can use to log in:
 
-   | Field    | Value                       |
-   |----------|-----------------------------|
-   | Email    | `linus@aster.so`            |
+   | Field    | Value                        |
+   |----------|------------------------------|
+   | Email    | `linus@aster.so`             |
    | Password | `@justForFun1991`            |
 
    If you don't want the quick start seeding then set the `SEED_QUICK_START_DATA` enviorment variable to `false` in the `.env` file.
