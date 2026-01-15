@@ -82,6 +82,13 @@ Launch the project:
    docker compose -p aster-quick-start -f docker-compose.quick-start.yml up -d
    ```
 
+   The quick-start setup automatically creates a demo user you can use to log in:
+
+   | Field    | Value                       |
+   |----------|-----------------------------|
+   | Email    | `linus@aster.so`            |
+   | Password | `justforfun1991`            |
+
    To stop the quick-start containers:
 
    ```bash
