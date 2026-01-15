@@ -94,7 +94,15 @@ export function getUserRouter(options: RouterOptions = {}) {
         const html = getEmailVerificationEmail(token);
         const client = new EmailClient(smtpConnectionUrl);
         await client.sendEmail({ to: email, subject, html });
-      } else {
+      }
+
+      else if (!smtpConnectionUrl && token){
+        const redirectUrl = `${process.env.DASHBOARD_APP_URL}/callback/signup?token=${token}`
+
+        return res.status(200).json({ success: true, redirectUrl })
+      }
+      
+      else {
         throw AppError({
           message: "Failed to send email verification email",
           statusCode: 500,
