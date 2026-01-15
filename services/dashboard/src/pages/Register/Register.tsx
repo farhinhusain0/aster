@@ -29,7 +29,12 @@ const SignupPage = () => {
     setError(null);
 
     try {
-      await register(email, password, name);
+      const data = await register(email, password, name);
+      // check if data contains redirect url
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       navigate(paths.REGISTRATION_EMAIL_VERIFICATION_PATH, {
         state: {
           email,

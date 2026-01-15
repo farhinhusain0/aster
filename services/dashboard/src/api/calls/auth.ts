@@ -22,6 +22,7 @@ interface LoginResponse {
 
 interface RegisterResponse {
   success: boolean;
+  redirectUrl?: string;
 }
 
 interface VerifyRegistrationResponse {
