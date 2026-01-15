@@ -9,7 +9,7 @@ import { generatePasswordHash } from "./utils/token";
 
 const QUICK_START_USER = {
   email: "linus@aster.so",
-  password: "justforfun1991",
+  password: "@justForFun1991",
   name: "Linus Torvalds",
 };
 

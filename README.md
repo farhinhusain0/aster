@@ -85,7 +85,7 @@ Launch the project:
    | Field    | Value                       |
    |----------|-----------------------------|
    | Email    | `linus@aster.so`            |
-   | Password | `justforfun1991`            |
+   | Password | `@justForFun1991`            |
 
    If you don't want the quick start seeding then set the `SEED_QUICK_START_DATA` enviorment variable to `false` in the `.env` file.
 
