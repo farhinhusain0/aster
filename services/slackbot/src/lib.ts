@@ -1,8 +1,9 @@
 import { GenericMessageEvent } from "@slack/types";
-import { Roles, BotNames } from "./constants";
+import { BotNames } from "./constants";
 import { downloadFile } from "./utils/slack";
 import { MessageElement } from "@slack/web-api/dist/types/response/ConversationsRepliesResponse";
 import { ChatMessage } from "./types";
+import { LangChainMessageRoles } from "@aster/utils";
 
 export function extractEventId(message: MessageElement) {
   const { name: botName } = message.bot_profile!;
@@ -33,7 +34,10 @@ export async function parseMessage(
   token: string,
 ): Promise<ChatMessage> {
   const botMentionString = `<@${botUserId}>`;
-  const role = message.user === botUserId ? Roles.assistant : Roles.user;
+  const role =
+    message.user === botUserId
+      ? LangChainMessageRoles.assistant
+      : LangChainMessageRoles.user;
   const text = message.text!.replace(botMentionString, "@Aster");
 
   const hasImage = message.files && message.files.length;

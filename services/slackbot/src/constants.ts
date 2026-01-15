@@ -6,12 +6,6 @@ export function isDev() {
   return process.env.NODE_ENV === "development";
 }
 
-export const Roles = {
-  user: "user",
-  system: "system",
-  assistant: "assistant",
-};
-
 export const BotNames = ["Opsgenie for Alert Management"];
 
 export const SCOPES = [

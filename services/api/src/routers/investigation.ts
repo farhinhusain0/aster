@@ -107,6 +107,15 @@ router.post(
 
       const jsmClient = new JiraServiceManagementClient(apiKey);
       jsmDetails = await jsmClient.getAlert(incidentId);
+      if (jsmIntegration?.metadata?.siteUrl) {
+        jsmDetails = {
+          ...jsmDetails,
+          // TODO: This is unstable, we should be able to get the htmlUrl from the Jira Service Management API
+          asterAdded: {
+            htmlUrl: `https://${jsmIntegration.metadata.siteUrl}/jira/ops/alerts/${incidentId}`,
+          },
+        };
+      }
     } else if (vendorName === VendorName.PagerDuty) {
       pdIncidentId = incidentId;
       const pagerdutyIntegration = (await integrationModel.getIntegrationByName(

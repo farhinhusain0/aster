@@ -7,6 +7,12 @@ import { IntegrationField } from "../../components/IntegrationField";
 
 const fieldsConfigurations: FieldConfiguration[] = [
   {
+    key: "siteUrl",
+    label: "Site URL",
+    type: "metadata",
+    subtitle: "your-organization.atlassian.net",
+  },
+  {
     key: "apiKey",
     label: "API Key",
     type: "credentials",
