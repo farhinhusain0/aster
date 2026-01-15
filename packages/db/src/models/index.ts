@@ -14,3 +14,4 @@ export { Job, jobModel } from "./job";
 export { Investigation, investigationModel } from "./investigation";
 export { InvestigationCheck, investigationCheckModel } from "./investigationCheck";
 export { Profile, profileModel } from "./profile";
+export { AuthToken, authTokenModel } from "./auth-token";

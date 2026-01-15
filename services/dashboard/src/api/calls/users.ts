@@ -122,3 +122,23 @@ export const changeRole = async (
     throw error;
   }
 };
+
+export const logout = async (axios: AxiosInstance) => {
+  try {
+    const response = await axios.post(`/users/logout`);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+export const validateToken = async (axios: AxiosInstance) => {
+  try {
+    const response = await axios.get(`/users/validate-token`);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
