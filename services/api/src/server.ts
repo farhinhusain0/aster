@@ -1,7 +1,7 @@
 import { connectAndInitDb } from "@aster/db/init";
 import { startAllJobs, stopAllJobs } from "./jobs";
 import { createApp } from "./app";
-import { seedQuickStartUser } from "./quick-start";
+import { seedQuickStartData } from "./seed/quick-start";
 
 init();
 
@@ -14,7 +14,7 @@ async function init() {
 
   // Seed quick-start demo user if enabled
   if (process.env.SEED_QUICK_START_DATA === "true") {
-    await seedQuickStartUser();
+    await seedQuickStartData();
   }
 
   // Start all cron jobs
