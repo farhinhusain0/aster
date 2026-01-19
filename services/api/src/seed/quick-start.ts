@@ -110,8 +110,6 @@ async function seedUser(): Promise<IUser | undefined> {
     password: hashedPassword,
     organization: organization,
     profile: profile,
-    status: "activated",
-    role: "owner",
   });
 
   const user = await userModel.create(userData);
