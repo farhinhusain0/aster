@@ -139,7 +139,6 @@ export function getUserRouter(options: RouterOptions = {}) {
         plan: plan!._id,
         logo: "",
       });
-      await planStateModel.createInitialState(plan!._id, organization._id);
 
       const existingUserCount = await userModel.getCount({
         organization: organization._id,
