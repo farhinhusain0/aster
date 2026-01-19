@@ -126,13 +126,10 @@ router.post(
 
     const emails = req.body.emails as string[];
 
-    // check if invited users emails match organiation's domain
-    const organizationDomains = req.user!.organization.domains;
+    const emailRegex =
+      /^(?!.*\.\.)(?!\.)(?!.*\.$)(?!.*\.\-)(?!.*\-\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
     const invalidEmails = emails.filter(
-      (email: string) =>
-        !organizationDomains.some((domain: string) =>
-          email.endsWith(`@${domain}`),
-        ),
+      (email: string) => !emailRegex.test(email)
     );
     if (invalidEmails.length > 0) {
       throw AppError({
