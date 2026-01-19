@@ -88,21 +88,33 @@ async function seedUser(): Promise<IUser | undefined> {
     return;
   }
 
-  const organization = await organizationModel.create(
-    createSeedOrganization({
-      _id: SEED_ORG_PRESETS.quickStartOrg._id,
-      name: SEED_ORG_PRESETS.quickStartOrg.name,
-      plan: plan._id,
-      logo: SEED_ORG_PRESETS.quickStartOrg.logo,
-      domains: [...SEED_ORG_PRESETS.quickStartOrg.domains],
-    }),
+  // Get or create organization
+  const existingOrganization = await organizationModel.getOneById(
+    SEED_ORG_PRESETS.quickStartOrg._id,
   );
+  const organization =
+    existingOrganization ||
+    (await organizationModel.create(
+      createSeedOrganization({
+        _id: SEED_ORG_PRESETS.quickStartOrg._id,
+        name: SEED_ORG_PRESETS.quickStartOrg.name,
+        plan: plan._id,
+        logo: SEED_ORG_PRESETS.quickStartOrg.logo,
+        domains: [...SEED_ORG_PRESETS.quickStartOrg.domains],
+      }),
+    ));
 
   await planStateModel.createInitialState(plan._id, organization._id);
 
-  const profile = await profileModel.create(
-    createSeedProfile(SEED_USER_PRESETS.quickStartUser.profile),
+  // Get or create profile
+  const existingProfile = await profileModel.getOneById(
+    SEED_USER_PRESETS.quickStartUser.profile._id,
   );
+  const profile =
+    existingProfile ||
+    (await profileModel.create(
+      createSeedProfile(SEED_USER_PRESETS.quickStartUser.profile),
+    ));
 
   const hashedPassword = await generatePasswordHash(
     SEED_USER_PRESETS.quickStartUser.password,
