@@ -1,7 +1,7 @@
 import { connectAndInitDb } from "@aster/db/init";
 import { startAllJobs, stopAllJobs } from "./jobs";
 import { createApp } from "./app";
-import { seedQuickStartData } from "./seed/quick-start";
+import { seedQuickStartData } from "./seed";
 
 init();
 
