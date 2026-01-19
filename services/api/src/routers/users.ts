@@ -84,6 +84,13 @@ export function getUserRouter(options: RouterOptions = {}) {
         });
       }
 
+      if (!user && (process.env?.INVITE_ONLY as string ?? "true") === "true") {
+        throw AppError({
+          message: "Public registration is disabled. Invitation required",
+          statusCode: 400,
+        });
+      }
+
       const token = generateEmailVerificationToken(email, password, name);
 
       //  TOOD: The email client should be resposible for verifiying
@@ -128,6 +135,13 @@ export function getUserRouter(options: RouterOptions = {}) {
       if (user && user.status !== "invited") {
         throw AppError({
           message: "User already exists",
+          statusCode: 400,
+        });
+      }
+
+      if (!user && (process.env?.INVITE_ONLY as string ?? "true") === "true") {
+        throw AppError({
+          message: "Public registration is disabled. Invitation required",
           statusCode: 400,
         });
       }
