@@ -124,14 +124,14 @@ export function getUserRouter(options: RouterOptions = {}) {
         name: string;
       };
 
-      const doesUserExist = await userModel.getOne({ email });
-      if (doesUserExist) {
+      let user = await userModel.getOne({ email });
+      if (user && user.status !== "invited") {
         throw AppError({
-          message: "Invalid token",
+          message: "User already exists",
           statusCode: 400,
         });
       }
-
+      
       const domain = email.split("@")[1];
       const plan = await planModel.getOne({ name: "free" });
       const organization = await organizationModel.getOrCreate({
