@@ -167,17 +167,30 @@ export function getUserRouter(options: RouterOptions = {}) {
       //Hash password
       const hashedPassword = await generatePasswordHash(password);
       const role = existingUserCount === 0 ? "owner" : "member";
-      const user = await userModel.create({
-        email,
-        status: "activated",
-        password: hashedPassword,
-        organization: organization,
-        role,
-        profile: profile,
-        passwordResetCompletedAt: null,
-        passwordResetRequestedAt: null,
-        passwordResetStatus: null,
-      });
+      
+      if (!user){
+        user = await userModel.create({
+          email,
+          status: "activated",
+          password: hashedPassword,
+          organization: organization,
+          role,
+          profile: profile,
+          passwordResetCompletedAt: null,
+          passwordResetRequestedAt: null,
+          passwordResetStatus: null,
+        });
+      } 
+      else {
+        user.status = "activated";
+        user.password = hashedPassword;
+        user.role = role;
+        user.profile = profile;
+        user.passwordResetCompletedAt = null;
+        user.passwordResetRequestedAt = null;
+        user.passwordResetStatus = null;
+        await user.save();
+      }
 
       const accessToken = generateToken(user);
       return res.status(200).json({ token: accessToken });
