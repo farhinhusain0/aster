@@ -18,20 +18,12 @@ import {
   getInvestigationData,
 } from "./investigation-data";
 import mongoose from "mongoose";
-
-const QUICK_START_USER = {
-  _id: new mongoose.Types.ObjectId("000000000000000000000002"),
-  email: "linus@aster.so",
-  password: "@justForFun1991",
-  name: "Linus Torvalds",
-};
-
-const QUICK_START_ORG = {
-  _id: new mongoose.Types.ObjectId("000000000000000000000001"),
-  name: "Aster",
-  logo: "",
-  domains: ["aster.so"],
-};
+import {
+  createSeedUser,
+  SEED_USER_PRESETS,
+  createSeedOrganization,
+  SEED_ORG_PRESETS,
+} from "./factories";
 
 /**
  * Seeds a demo user for quick-start mode.
@@ -77,11 +69,11 @@ export async function seedQuickStartData(): Promise<void> {
 
   console.log("[QuickStart] Seeded quick-start data successfully!");
   console.log(`[QuickStart] Email: ${user.email}`);
-  console.log(`[QuickStart] Password: ${QUICK_START_USER.password}`);
+  console.log(`[QuickStart] Password: ${SEED_USER_PRESETS.quickStartUser.password}`);
 }
 
 async function seedUser(): Promise<IUser | undefined> {
-  const existingUser = await userModel.getOneById(QUICK_START_USER._id);
+  const existingUser = await userModel.getOneById(SEED_USER_PRESETS.quickStartUser._id);
   if (existingUser) {
     console.log("[QuickStart] User already exists, skipping seed.");
     return existingUser;
@@ -94,37 +86,41 @@ async function seedUser(): Promise<IUser | undefined> {
     return;
   }
 
-  // 2. Create organization
-  const organization = await organizationModel.create({
-    name: QUICK_START_ORG.name,
+  // 2. Create organization using type-safe factory
+  const organizationData = createSeedOrganization({
+    _id: SEED_ORG_PRESETS.quickStartOrg._id,
+    name: SEED_ORG_PRESETS.quickStartOrg.name,
     plan: plan._id,
-    logo: QUICK_START_ORG.logo,
-    domains: QUICK_START_ORG.domains,
+    logo: SEED_ORG_PRESETS.quickStartOrg.logo,
+    domains: [...SEED_ORG_PRESETS.quickStartOrg.domains],
   });
+
+  const organization = await organizationModel.create(organizationData);
 
   // 3. Initialize plan state
   await planStateModel.createInitialState(plan._id, organization._id);
 
   // 4. Create profile
   const profile = await profileModel.create({
-    name: QUICK_START_USER.name,
+    name: SEED_USER_PRESETS.quickStartUser.name,
   });
 
   // 5. Hash password
-  const hashedPassword = await generatePasswordHash(QUICK_START_USER.password);
+  const hashedPassword = await generatePasswordHash(SEED_USER_PRESETS.quickStartUser.password);
 
-  // 6. Create user
-  const user = await userModel.create({
-    email: QUICK_START_USER.email,
+  // 6. Create user using type-safe factory
+  const userData = createSeedUser({
+    _id: SEED_USER_PRESETS.quickStartUser._id,
+    email: SEED_USER_PRESETS.quickStartUser.email,
     password: hashedPassword,
-    status: "activated",
-    role: "owner",
+    name: SEED_USER_PRESETS.quickStartUser.name,
     organization: organization,
     profile: profile,
-    passwordResetCompletedAt: null,
-    passwordResetRequestedAt: null,
-    passwordResetStatus: null,
+    status: "activated",
+    role: "owner",
   });
+
+  const user = await userModel.create(userData);
 
   return user;
 }
