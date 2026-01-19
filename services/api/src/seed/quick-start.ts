@@ -74,14 +74,6 @@ export async function seedQuickStartData(): Promise<void> {
 }
 
 async function seedUser(): Promise<IUser | undefined> {
-  const existingUser = await userModel.getOneById(
-    SEED_USER_PRESETS.quickStartUser._id,
-  );
-  if (existingUser) {
-    console.log("[QuickStart] User already exists, skipping seed.");
-    return existingUser;
-  }
-
   const plan = await planModel.getOne({ name: "free" });
   if (!plan) {
     console.error("[QuickStart] Free plan not found. Cannot seed user.");
@@ -99,12 +91,12 @@ async function seedUser(): Promise<IUser | undefined> {
         _id: SEED_ORG_PRESETS.quickStartOrg._id,
         name: SEED_ORG_PRESETS.quickStartOrg.name,
         plan: plan._id,
-        logo: SEED_ORG_PRESETS.quickStartOrg.logo,
         domains: [...SEED_ORG_PRESETS.quickStartOrg.domains],
       }),
     ));
-
-  await planStateModel.createInitialState(plan._id, organization._id);
+  if (!existingOrganization) {
+    await planStateModel.createInitialState(plan._id, organization._id);
+  }
 
   // Get or create profile
   const existingProfile = await profileModel.getOneById(
@@ -115,6 +107,14 @@ async function seedUser(): Promise<IUser | undefined> {
     (await profileModel.create(
       createSeedProfile(SEED_USER_PRESETS.quickStartUser.profile),
     ));
+
+  const existingUser = await userModel.getOneById(
+    SEED_USER_PRESETS.quickStartUser._id,
+  );
+  if (existingUser) {
+    console.log("[QuickStart] User already exists, skipping seed.");
+    return existingUser;
+  }
 
   const hashedPassword = await generatePasswordHash(
     SEED_USER_PRESETS.quickStartUser.password,

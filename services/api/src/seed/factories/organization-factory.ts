@@ -11,7 +11,6 @@ export interface SeedOrganizationConfig {
   name: string;
   plan: IPlan | mongoose.Types.ObjectId;
   domains: string[];
-  logo?: string;
 }
 
 /**
@@ -30,7 +29,7 @@ export function createSeedOrganization(config: SeedOrganizationConfig): Omit<IOr
     name: config.name,
     plan: config.plan,
     domains: config.domains,
-    logo: config.logo || "",
+    logo: "",
   };
 }
 
@@ -42,7 +41,6 @@ export const SEED_ORG_PRESETS = {
   quickStartOrg: {
     _id: new mongoose.Types.ObjectId("000000000000000000000001"),
     name: "Aster",
-    logo: "",
     domains: ["aster.so"],
   },
 };
