@@ -17,6 +17,10 @@ import {
   SEED_USER_PRESETS,
   createSeedOrganization,
   SEED_ORG_PRESETS,
+  createSeedInvestigation,
+  SEED_INVESTIGATION_PRESETS,
+  createSeedInvestigationCheck,
+  SEED_INVESTIGATION_CHECK_PRESETS,
   createSeedProfile,
 } from "./factories";
 
@@ -120,33 +124,30 @@ async function seedUser(): Promise<IUser | undefined> {
 async function seedInvestigation(
   organization: IOrganization,
 ): Promise<IInvestigation> {
-  const investigationData = getInvestigationData();
-
   const existingInvestigation = await investigationModel.getOneById(
-    investigationData._id,
+    SEED_INVESTIGATION_PRESETS.quickStartInvestigation._id,
   );
   if (existingInvestigation) {
     console.log("[QuickStart] Investigation already exists, skipping seed.");
     return existingInvestigation;
   }
 
-  // 7. Create investigation
-  const investigation = await investigationModel.create({
+  const investigationData = createSeedInvestigation({
+    ...SEED_INVESTIGATION_PRESETS.quickStartInvestigation,
     organization: organization,
-    status: "active",
-    ...investigationData,
   });
 
+  const investigation = await investigationModel.create(investigationData);
   return investigation;
 }
 
 async function seedGithubInvestigationCheck(
   investigation: IInvestigation,
 ): Promise<IInvestigationCheck> {
-  const githubCheckData = getGithubCheckData();
-
   const existingGithubInvestigationCheck =
-    await investigationCheckModel.getOneById(githubCheckData._id);
+    await investigationCheckModel.getOneById(
+      SEED_INVESTIGATION_CHECK_PRESETS.githubCheck._id,
+    );
   if (existingGithubInvestigationCheck) {
     console.log(
       "[QuickStart] Github investigation check already exists, skipping seed.",
@@ -154,21 +155,23 @@ async function seedGithubInvestigationCheck(
     return existingGithubInvestigationCheck;
   }
 
-  const githubInvestigationCheck = await investigationCheckModel.create({
+  const githubCheckData = createSeedInvestigationCheck({
+    ...SEED_INVESTIGATION_CHECK_PRESETS.githubCheck,
     investigation: investigation,
-    source: "github",
-    ...githubCheckData,
   });
+
+  const githubInvestigationCheck =
+    await investigationCheckModel.create(githubCheckData);
   return githubInvestigationCheck;
 }
 
 async function seedGrafanaInvestigationCheck(
   investigation: IInvestigation,
 ): Promise<IInvestigationCheck> {
-  const grafanaCheckData = getGrafanaCheckData();
-
   const existingGrafanaInvestigationCheck =
-    await investigationCheckModel.getOneById(grafanaCheckData._id);
+    await investigationCheckModel.getOneById(
+      SEED_INVESTIGATION_CHECK_PRESETS.grafanaCheck._id,
+    );
   if (existingGrafanaInvestigationCheck) {
     console.log(
       "[QuickStart] Grafana investigation check already exists, skipping seed.",
@@ -176,10 +179,12 @@ async function seedGrafanaInvestigationCheck(
     return existingGrafanaInvestigationCheck;
   }
 
-  const grafanaInvestigationCheck = await investigationCheckModel.create({
+  const grafanaCheckData = createSeedInvestigationCheck({
+    ...SEED_INVESTIGATION_CHECK_PRESETS.grafanaCheck,
     investigation: investigation,
-    source: "grafana",
-    ...grafanaCheckData,
   });
+
+  const grafanaInvestigationCheck =
+    await investigationCheckModel.create(grafanaCheckData);
   return grafanaInvestigationCheck;
 }
