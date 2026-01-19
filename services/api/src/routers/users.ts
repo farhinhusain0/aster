@@ -134,7 +134,7 @@ export function getUserRouter(options: RouterOptions = {}) {
 
       const domain = email.split("@")[1];
       const plan = await planModel.getOne({ name: "free" });
-      const organization = await organizationModel.create({
+      const organization = await organizationModel.getOrCreate({
         name: domain,
         plan: plan!._id,
         logo: "",
