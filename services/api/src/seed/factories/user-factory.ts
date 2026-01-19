@@ -10,7 +10,6 @@ export interface SeedUserConfig {
   _id?: mongoose.Types.ObjectId;
   email: string;
   password: string;
-  name: string;
   organization: IOrganization;
   profile: IProfile;
   status?: "activated" | "invited";
@@ -43,14 +42,45 @@ export function createSeedUser(config: SeedUserConfig): Omit<IUser, "createdAt" 
 }
 
 /**
+ * Configuration for creating a seed profile.
+ * This interface allows flexibility in what can be configured
+ * while the factory ensures all required IProfile fields are present.
+ */
+export interface SeedProfileConfig {
+  _id?: mongoose.Types.ObjectId;
+  name: string;
+}
+
+/**
+ * Creates a type-safe profile object for seeding.
+ *
+ * The return type ensures that ALL required fields from the IProfile interface
+ * are present. If the IProfile schema changes to add new required fields, TypeScript
+ * will error here, forcing us to update the seed data.
+ *
+ * @param config - Configuration for the profile seed data
+ * @returns Complete IProfile object ready for database insertion
+ */
+export function createSeedProfile(config: SeedProfileConfig): Omit<IProfile, "createdAt" | "updatedAt"> {
+  return {
+    _id: config._id || new mongoose.Types.ObjectId(),
+    name: config.name,
+    picture: "",
+  };
+}
+
+/**
  * Preset configurations for common test users.
  * These can be used across different seed files for consistency.
  */
 export const SEED_USER_PRESETS = {
   quickStartUser: {
-    _id: new mongoose.Types.ObjectId("000000000000000000000002"),
+    _id: new mongoose.Types.ObjectId("000000000000000000000001"),
     email: "linus@aster.so",
     password: "@justForFun1991",
-    name: "Linus Torvalds",
+    profile: {
+      _id: new mongoose.Types.ObjectId("000000000000000000000001"),
+      name: "Linus Torvalds",
+    }
   },
 } as const;

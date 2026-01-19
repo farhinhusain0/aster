@@ -13,16 +13,11 @@ import {
 } from "@aster/db";
 import { generatePasswordHash } from "../utils/token";
 import {
-  getGithubCheckData,
-  getGrafanaCheckData,
-  getInvestigationData,
-} from "./investigation-data";
-import mongoose from "mongoose";
-import {
   createSeedUser,
   SEED_USER_PRESETS,
   createSeedOrganization,
   SEED_ORG_PRESETS,
+  createSeedProfile,
 } from "./factories";
 
 /**
@@ -69,51 +64,50 @@ export async function seedQuickStartData(): Promise<void> {
 
   console.log("[QuickStart] Seeded quick-start data successfully!");
   console.log(`[QuickStart] Email: ${user.email}`);
-  console.log(`[QuickStart] Password: ${SEED_USER_PRESETS.quickStartUser.password}`);
+  console.log(
+    `[QuickStart] Password: ${SEED_USER_PRESETS.quickStartUser.password}`,
+  );
 }
 
 async function seedUser(): Promise<IUser | undefined> {
-  const existingUser = await userModel.getOneById(SEED_USER_PRESETS.quickStartUser._id);
+  const existingUser = await userModel.getOneById(
+    SEED_USER_PRESETS.quickStartUser._id,
+  );
   if (existingUser) {
     console.log("[QuickStart] User already exists, skipping seed.");
     return existingUser;
   }
 
-  // 1. Get the free plan
   const plan = await planModel.getOne({ name: "free" });
   if (!plan) {
     console.error("[QuickStart] Free plan not found. Cannot seed user.");
     return;
   }
 
-  // 2. Create organization using type-safe factory
-  const organizationData = createSeedOrganization({
-    _id: SEED_ORG_PRESETS.quickStartOrg._id,
-    name: SEED_ORG_PRESETS.quickStartOrg.name,
-    plan: plan._id,
-    logo: SEED_ORG_PRESETS.quickStartOrg.logo,
-    domains: [...SEED_ORG_PRESETS.quickStartOrg.domains],
-  });
+  const organization = await organizationModel.create(
+    createSeedOrganization({
+      _id: SEED_ORG_PRESETS.quickStartOrg._id,
+      name: SEED_ORG_PRESETS.quickStartOrg.name,
+      plan: plan._id,
+      logo: SEED_ORG_PRESETS.quickStartOrg.logo,
+      domains: [...SEED_ORG_PRESETS.quickStartOrg.domains],
+    }),
+  );
 
-  const organization = await organizationModel.create(organizationData);
-
-  // 3. Initialize plan state
   await planStateModel.createInitialState(plan._id, organization._id);
 
-  // 4. Create profile
-  const profile = await profileModel.create({
-    name: SEED_USER_PRESETS.quickStartUser.name,
-  });
+  const profile = await profileModel.create(
+    createSeedProfile(SEED_USER_PRESETS.quickStartUser.profile),
+  );
 
-  // 5. Hash password
-  const hashedPassword = await generatePasswordHash(SEED_USER_PRESETS.quickStartUser.password);
+  const hashedPassword = await generatePasswordHash(
+    SEED_USER_PRESETS.quickStartUser.password,
+  );
 
-  // 6. Create user using type-safe factory
   const userData = createSeedUser({
     _id: SEED_USER_PRESETS.quickStartUser._id,
     email: SEED_USER_PRESETS.quickStartUser.email,
     password: hashedPassword,
-    name: SEED_USER_PRESETS.quickStartUser.name,
     organization: organization,
     profile: profile,
     status: "activated",
