@@ -125,10 +125,7 @@ function EmailInput({
     // Validate if email is registered
     const isRegisteredEmail = registeredEmails?.includes(value);
 
-    // Validate domain if domains are configured
-    let isValidDomain = validateDomain(value, domains);
-
-    const isValid = isValidEmail && isValidDomain && !isRegisteredEmail;
+    const isValid = isValidEmail && !isRegisteredEmail;
 
     onChange(value, isValid);
 
@@ -141,9 +138,8 @@ function EmailInput({
 
     if (isRegisteredEmail) {
       setEmailInputError("Email already registered");
-    } else if (!isValidDomain) {
-      setEmailInputError("Invalid domain");
-    } else {
+    }
+    else {
       setEmailInputError("");
     }
   };
