@@ -144,7 +144,7 @@ router.post(
       email: string,
       organization: IOrganization,
     ): Promise<{ email: string; signup_link: string }> => {
-      const signup_link = "https://app.aster.so/signup/";
+      const signup_link = `${process.env.DASHBOARD_APP_URL}/signup/`;
       // Create an internal user
       const internalUser = await userModel.create({
         status: "invited",
@@ -159,7 +159,7 @@ router.post(
         const subject = "Invitation to Aster";
         const html = `You have been invited to Aster.
     Please click the following link to join: <a href=${signup_link}>Click here</a>.
-    Once you are registered, you can sign in to https://app.aster.so or start using the Slack bot!`;
+    Once you are registered, you can sign in to ${process.env.DASHBOARD_APP_URL} or start using the Slack bot!`;
         const client = new EmailClient(smtpConnectionUrl);
         await client.sendEmail({ to: email, subject, html });
       }
