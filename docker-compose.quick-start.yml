@@ -27,6 +27,8 @@ services:
       service: api-common
     container_name: aster-quick-api
     image: ghcr.io/asteroncall/aster-api:latest
+    environment:
+      - SEED_QUICK_START_DATA=${SEED_QUICK_START_DATA:-true}
 
   data-processor:
     extends:
