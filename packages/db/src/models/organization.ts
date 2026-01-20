@@ -8,4 +8,15 @@ export const Organization = mongoose.model<IOrganization>(
   OrganizationSchema,
 );
 
-export const organizationModel = new BaseModel(Organization);
+export class OrganizationModel extends BaseModel<IOrganization> {
+  async getOrCreate(data?: Partial<IOrganization>) {
+    const existing = await this.model.findOne();
+    if (existing) {
+      return existing;
+    }
+
+    return this.model.create(data || {});
+  }
+}
+
+export const organizationModel = new OrganizationModel(Organization);

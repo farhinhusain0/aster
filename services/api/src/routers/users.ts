@@ -85,6 +85,13 @@ export function getUserRouter(options: RouterOptions = {}) {
         });
       }
 
+      if (!user && (process.env?.INVITE_ONLY as string ?? "true") === "true") {
+        throw AppError({
+          message: "Public registration is disabled. Invitation required",
+          statusCode: 400,
+        });
+      }
+
       const token = generateEmailVerificationToken(email, password, name);
 
       //  TOOD: The email client should be resposible for verifiying
@@ -121,22 +128,28 @@ export function getUserRouter(options: RouterOptions = {}) {
         name: string;
       };
 
-      const doesUserExist = await userModel.getOne({ email });
-      if (doesUserExist) {
+      let user = await userModel.getOne({ email });
+      if (user && user.status !== "invited") {
         throw AppError({
-          message: "Invalid token",
+          message: "User already exists",
           statusCode: 400,
         });
       }
 
+      if (!user && (process.env?.INVITE_ONLY as string ?? "true") === "true") {
+        throw AppError({
+          message: "Public registration is disabled. Invitation required",
+          statusCode: 400,
+        });
+      }
+      
       const domain = email.split("@")[1];
       const plan = await planModel.getOne({ name: "free" });
-      const organization = await organizationModel.create({
+      const organization = await organizationModel.getOrCreate({
         name: domain,
         plan: plan!._id,
         logo: "",
       });
-      await planStateModel.createInitialState(plan!._id, organization._id);
 
       const existingUserCount = await userModel.getCount({
         organization: organization._id,
@@ -151,17 +164,30 @@ export function getUserRouter(options: RouterOptions = {}) {
       //Hash password
       const hashedPassword = await generatePasswordHash(password);
       const role = existingUserCount === 0 ? "owner" : "member";
-      const user = await userModel.create({
-        email,
-        status: "activated",
-        password: hashedPassword,
-        organization: organization,
-        role,
-        profile: profile,
-        passwordResetCompletedAt: null,
-        passwordResetRequestedAt: null,
-        passwordResetStatus: null,
-      });
+      
+      if (!user){
+        user = await userModel.create({
+          email,
+          status: "activated",
+          password: hashedPassword,
+          organization: organization,
+          role,
+          profile: profile,
+          passwordResetCompletedAt: null,
+          passwordResetRequestedAt: null,
+          passwordResetStatus: null,
+        });
+      } 
+      else {
+        user.status = "activated";
+        user.password = hashedPassword;
+        user.role = role;
+        user.profile = profile;
+        user.passwordResetCompletedAt = null;
+        user.passwordResetRequestedAt = null;
+        user.passwordResetStatus = null;
+        await user.save();
+      }
 
       const accessToken = await generateToken(user);
       return res.status(200).json({ token: accessToken });

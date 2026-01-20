@@ -1,7 +1,7 @@
 import mongoose, { FilterQuery, Types, UpdateQuery } from "mongoose";
 
 export class BaseModel<T> {
-  private readonly model: mongoose.Model<T>;
+  protected readonly model: mongoose.Model<T>;
   constructor(model: mongoose.Model<T>) {
     this.model = model;
   }
