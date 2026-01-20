@@ -6,7 +6,7 @@ import { Trash01 } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
 import { v4 as uuidv4 } from "uuid";
 import { useMe } from "@/api/queries/auth";
-import { validateDomain, validateEmail } from "@/utils/validators";
+import { validateEmail } from "@/utils/validators";
 import { useOrgUsers } from "@/api/queries/users";
 import FormHint from "@/components/common/FormHint";
 
@@ -115,7 +115,6 @@ function EmailInput({
   const registeredEmails = users?.users
     .filter((user) => user.status === "activated")
     .map((user) => user.email);
-  const domains = user?.organization.domains;
   const [emailInputError, setEmailInputError] = useState("");
 
   const handleChange = (value: string) => {
