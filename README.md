@@ -66,6 +66,9 @@ Update these variables:
 
 - `MICROSOFT_TEAMSBOT_URL`, `MICROSOFT_TEAMS_APP_ID`, `MICROSOFT_APP_ID`, `MICROSOFT_APP_TENANT_ID` and `MICROSOFT_APP_PASSWORD` - If you use Teams, follow [this guide](https://github.com/asteroncall/aster/tree/main/config/teams/README.md) to create a Teams app for Aster in your organization
 
+>[!Note]
+> For additional configuration options refer to the `.env.example` file.
+
 
 
 Launch the project:
