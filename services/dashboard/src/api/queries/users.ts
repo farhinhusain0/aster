@@ -6,6 +6,8 @@ import {
   changeRole,
   updateUser,
   changePassword,
+  logout,
+  validateToken,
 } from "../calls/users";
 
 export const useOrgUsers = (organizationId: string | undefined) => {
@@ -54,5 +56,22 @@ export const useChangeRole = () => {
     mutationKey: ["changeRole"],
     mutationFn: async (data: { id: string; role: string }) =>
       changeRole(axios, data),
+  });
+};
+
+export const useLogout = () => {
+  const axios = useAxios();
+  return useMutation({
+    mutationKey: ["logout"],
+    mutationFn: async () => logout(axios),
+  });
+};
+
+export const useValidateToken = () => {
+  const axios = useAxios();
+  return useQuery({
+    queryKey: ["validateToken"],
+    queryFn: async () => validateToken(axios),
+    retry: false,
   });
 };

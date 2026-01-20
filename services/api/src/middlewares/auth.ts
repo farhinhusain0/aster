@@ -3,6 +3,7 @@ import { AppError } from "../errors";
 import { catchAsync } from "../utils/errors";
 import jwt from "jsonwebtoken";
 import { getUserFromRequest } from "../utils/auth";
+import { authTokenModel } from "@aster/db";
 
 declare module "express-serve-static-core" {
   interface Request {
@@ -37,6 +38,13 @@ export const checkAuth = async function (
     }
 
     const token = authHeader ? authHeader.split(" ")[1] : authToken;
+    const dbToken = await authTokenModel.getOne({ token });
+    if (!dbToken) {
+      throw AppError({
+        message: "User not authorized!",
+        statusCode: 401,
+      });
+    }
 
     jwt.verify(
       token,

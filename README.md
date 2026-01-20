@@ -80,6 +80,16 @@ Launch the project:
    docker compose -p aster-quick-start -f docker-compose.quick-start.yml up -d
    ```
 
+   The quick-start setup automatically creates a demo user you can use to log in:
+
+   | Field    | Value                        |
+   |----------|------------------------------|
+   | Email    | `linus@aster.so`             |
+   | Password | `@justForFun1991`            |
+
+   >[!Note]
+   >If you don't want the quick start seeding then add and set the `SEED_QUICK_START_DATA` enviorment variable to `false` in the `.env` file.
+
    To stop the quick-start containers:
 
    ```bash

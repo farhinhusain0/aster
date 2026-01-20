@@ -14,3 +14,4 @@ export { JobSchema } from "./job";
 export { InvestigationSchema } from "./investigation";
 export { InvestigationCheckSchema } from "./investigationCheck";
 export { ProfileSchema } from "./profile";
+export { AuthTokenSchema } from "./auth-token";

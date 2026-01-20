@@ -1,10 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import { authApi } from "../api/calls/auth";
+import { useLogout } from "@/api/queries/users";
 
 interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<{ success: boolean; redirectUrl?: string }>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+  ) => Promise<{ success: boolean; redirectUrl?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -13,6 +24,7 @@ interface AuthContextType {
   isVerifying: boolean;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
+  resetAuthState: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +37,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { mutateAsync: logoutMutation } = useLogout();
+  const isLoggingOutRef = useRef(false);
 
   useEffect(() => {
     // Check for stored token on mount
@@ -85,7 +99,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (isLoggingOutRef.current) return;
+
+    isLoggingOutRef.current = true;
+    try {
+      await logoutMutation();
+    } catch (error) {
+      console.log(error);
+    }
+    resetAuthState();
+    isLoggingOutRef.current = false;
+  };
+
+  const resetAuthState = () => {
     setToken(null);
     setIsAuthenticated(false);
     setError(null);
@@ -132,6 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isVerifying,
     resetPassword,
     forgotPassword,
+    resetAuthState,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

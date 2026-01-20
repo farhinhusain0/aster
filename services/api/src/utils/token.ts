@@ -1,20 +1,27 @@
 import jwt from "jsonwebtoken";
-import { IUser } from "@aster/db";
+import { authTokenModel, IUser } from "@aster/db";
 import { AppError } from "../errors";
 import bcrypt from "bcrypt";
 
 const SALT_ROUNDS = 10;
 
-export const generatePasswordHash = async (password: string): Promise<string> => {
+export const generatePasswordHash = async (
+  password: string,
+): Promise<string> => {
   return await bcrypt.hash(password, SALT_ROUNDS);
 };
 
-export const comparePassword = async (password: string, hash: string): Promise<boolean> => {
+export const comparePassword = async (
+  password: string,
+  hash: string,
+): Promise<boolean> => {
   return await bcrypt.compare(password, hash);
 };
 
-
-export const generateToken = (user: IUser, expiresIn?: string): string => {
+export const generateToken = async (
+  user: IUser,
+  expiresIn?: string,
+): Promise<string> => {
   if (!process.env.JWT_SIGNING_SECRET) {
     console.log(
       "JWT_SIGNING_SECRET is not defined in the environment variables",
@@ -25,6 +32,11 @@ export const generateToken = (user: IUser, expiresIn?: string): string => {
     });
   }
 
+  const authToken = await authTokenModel.getOne({ user: user._id });
+  if (authToken) {
+    return authToken.token;
+  }
+
   const payload = {
     id: user._id,
     email: user.email,
@@ -33,7 +45,15 @@ export const generateToken = (user: IUser, expiresIn?: string): string => {
   // If expiresIn is provided, include it in the options; otherwise, omit it
   const options: jwt.SignOptions = expiresIn ? { expiresIn } : {};
 
-  return jwt.sign(payload, process.env.JWT_SIGNING_SECRET, options);
+  const token = jwt.sign(payload, process.env.JWT_SIGNING_SECRET, options);
+  await authTokenModel.create({
+    token,
+    user,
+    ...(expiresIn
+      ? { expiresAt: new Date(Date.now() + parseInt(expiresIn)) }
+      : {}),
+  });
+  return token;
 };
 
 export const generateEmailVerificationToken = (

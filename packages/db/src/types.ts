@@ -146,6 +146,15 @@ export interface IProfile {
   picture: string;
 }
 
+export interface IAuthToken {
+  _id: Types.ObjectId;
+  token: string;
+  expiresAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  user: IUser;
+}
+
 // Organization
 export interface IOrganization {
   _id: Types.ObjectId;

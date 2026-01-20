@@ -1,6 +1,7 @@
 import { connectAndInitDb } from "@aster/db/init";
 import { startAllJobs, stopAllJobs } from "./jobs";
 import { createApp } from "./app";
+import { seedQuickStartData } from "./seed";
 
 init();
 
@@ -10,6 +11,11 @@ async function init() {
 
   // Connect to DB
   await connectAndInitDb(mongoUri, "api");
+
+  // Seed quick-start demo user if enabled
+  if (process.env.SEED_QUICK_START_DATA === "true") {
+    await seedQuickStartData();
+  }
 
   // Start all cron jobs
   console.log("\n[Server] Stopping all the jobs before starting new ones");
