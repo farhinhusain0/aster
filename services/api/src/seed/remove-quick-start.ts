@@ -19,7 +19,7 @@ import {
  * Deletion order respects foreign key relationships:
  * - Integrations (references organization)
  * - Investigation and checks (references organization)
- * - User (references organization and profile)
+ * - User (references organization, then deletes auth tokens and profile and finally the user)
  * - Plan state (references organization)
  * - Organization
  */
