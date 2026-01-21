@@ -43,7 +43,8 @@
   "scripts": {
     "build": "npx tsc",
     "watch": "npx nodemon -L --exec \"npx ts-node --require tsconfig-paths/register src/server.ts\" --ext ts",
-    "dev": "npx dotenv-cli -o -e ../../.env -e .env yarn run watch"
+    "dev": "npx dotenv-cli -o -e ../../.env -e .env yarn run watch",
+    "unseed": "npx dotenv-cli -o -e ../../.env -e .env npx ts-node --require tsconfig-paths/register src/unseed.ts"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
@@ -85,7 +86,8 @@
     "includedScripts": [
       "build",
       "watch",
-      "dev"
+      "dev",
+      "unseed"
     ]
   }
 }

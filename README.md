@@ -90,8 +90,7 @@ Launch the project:
    | Email    | `linus@aster.so`             |
    | Password | `@justForFun1991`            |
 
-   >[!Note]
-   >If you don't want the quick start seeding then add and set the `SEED_QUICK_START_DATA` enviorment variable to `false` in the `.env` file.
+   Read more about seeding [here](services/api/src/seed/README.md)
 
    To stop the quick-start containers:
 
