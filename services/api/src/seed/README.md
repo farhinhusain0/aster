@@ -82,7 +82,7 @@ To remove all quick-start seed data from the database, use the unseed command.
 yarn unseed
 
 # Or from the workspace root
-nx run api:unseed
+nx unseed api
 ```
 
 ### Docker Container
