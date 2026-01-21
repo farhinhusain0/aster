@@ -90,7 +90,8 @@ Launch the project:
    | Email    | `linus@aster.so`             |
    | Password | `@justForFun1991`            |
 
-   Read more about seeding [here](services/api/src/seed/README.md)
+  >[!Note]
+  >Read more about seeding [here](services/api/src/seed/README.md)
 
    To stop the quick-start containers:
 
