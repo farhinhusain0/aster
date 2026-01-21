@@ -92,6 +92,7 @@ Launch the project:
 
   >[!Note]
   >For additional information, refer to the [seed README](services/api/src/seed/README.md).
+  >This includes, but is not limited to, instructions on how to enable/disable seed data at startup and how to remove existing seed data (both in local development and Docker containers).
 
    To stop the quick-start containers:
 

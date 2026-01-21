@@ -87,18 +87,23 @@ nx run api:unseed
 
 ### Docker Container
 
-If running inside a Docker container:
+If running inside a Docker container, use Node.js to run the compiled JavaScript directly:
 
 ```bash
 # Using docker-compose exec (while container is running)
-docker-compose exec api yarn unseed
+docker-compose exec api node src/unseed.js
 
 # Or with docker exec directly
-docker exec -it api yarn unseed
+docker exec -it api node src/unseed.js
 
 # For quick-start setup
-docker exec -it aster-quick-api yarn unseed
+docker exec -it aster-quick-api node src/unseed.js
 ```
+
+**Important Notes:**
+- The Docker container contains compiled JavaScript (not TypeScript), so you must run the `.js` file with Node.js instead of using `yarn unseed`
+- Environment variables (including `MONGO_URI`) are automatically available in the container via docker-compose
+- The working directory in the container is `/app/services/api/dist`, so the path is relative to that location
 
 ### What Gets Removed
 
