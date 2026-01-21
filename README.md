@@ -91,7 +91,7 @@ Launch the project:
    | Password | `@justForFun1991`            |
 
   >[!Note]
-  >Read more about seeding [here](services/api/src/seed/README.md)
+  >For additional information, refer to the [seed README](services/api/src/seed/README.md).
 
    To stop the quick-start containers:
 
