@@ -90,8 +90,9 @@ Launch the project:
    | Email    | `linus@aster.so`             |
    | Password | `@justForFun1991`            |
 
-   >[!Note]
-   >If you don't want the quick start seeding then add and set the `SEED_QUICK_START_DATA` enviorment variable to `false` in the `.env` file.
+  >[!Note]
+  >For additional information, refer to the [seed README](services/api/src/seed/README.md).
+  >This includes, but is not limited to, instructions on how to enable/disable seed data at startup and how to remove existing seed data (both in local development and Docker containers).
 
    To stop the quick-start containers:
 
