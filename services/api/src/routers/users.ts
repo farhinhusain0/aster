@@ -184,6 +184,14 @@ export function getUserRouter(options: RouterOptions = {}) {
         });
       }
 
+      if (user.status === "deactivated"){
+        res.status(403);
+        throw AppError({
+          message: "User is deactivated!",
+          statusCode: 403
+        })
+      }
+
       //compare password with hashedpassword
       if (user && (await comparePassword(password, user.password))) {
         const accessToken = generateToken(user);
