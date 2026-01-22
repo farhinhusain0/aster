@@ -29,7 +29,7 @@ from db.db_types import LLM
 from snapshots.utils import load_documents
 
 
-def get_embed_model(llm: LLM):
+def get_embed_model(llm: LLM | None):
     if llm:
         model_name = llm.models.embedding
         return OpenAIEmbedding(model_name=model_name)
@@ -88,7 +88,7 @@ async def build_index(
                 nodes = documents_to_nodes(documents[vendor][status])
                 total_nodes.extend(nodes)
 
-            n_existing_docs = index.stats and sum(index.stats.values()) or 0
+            n_existing_docs = (index.stats and index.stats.get(vendor, 0)) or 0
             stats[vendor] = n_existing_docs + len(vendor_documents["new"])
 
         # Delete nodes of documents that are about to be re-indexed
@@ -116,6 +116,7 @@ async def build_index(
                     "integrations": {vendor: "completed" for vendor in stats.keys()},
                 },
                 "stats": stats,
+                "dataSources": [vendor for vendor in stats.keys()],
             },
         )
         await job_model.get_one_by_id_and_update(
@@ -137,7 +138,8 @@ async def build_index(
                 "state": {
                     "status": "failed",
                     "integrations": {vendor: "failed" for vendor in stats.keys()},
-                }
+                },
+                "dataSources": [vendor for vendor in stats.keys()],
             },
         )
 
