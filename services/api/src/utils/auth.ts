@@ -39,5 +39,12 @@ export async function getUserFromRequest(
     });
   }
 
+  if (user.status === "deactivated") {
+    throw AppError({
+      message: "User is deactivated",
+      statusCode: 403,
+    });
+  }
+
   return user;
 }
