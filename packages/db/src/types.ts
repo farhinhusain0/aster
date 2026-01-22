@@ -129,7 +129,7 @@ export enum PasswordResetStatus {
 export interface IUser {
   _id: Types.ObjectId;
   email: string;
-  status: "activated" | "invited";
+  status: "activated" | "invited" | "deactivated";
   role: "owner" | "member";
   organization: IOrganization;
   password: string;

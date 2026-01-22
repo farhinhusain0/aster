@@ -10,7 +10,7 @@ export const UserSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: "Organization",
     },
-    status: { type: String, enum: ["activated", "invited"] },
+    status: { type: String, enum: ["activated", "invited", "deactivated"] },
     role: { type: String, enum: ["owner", "member"] },
     password: String,
     profile: {

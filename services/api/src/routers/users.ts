@@ -215,6 +215,14 @@ export function getUserRouter(options: RouterOptions = {}) {
         });
       }
 
+      if (user.status === "deactivated"){
+        res.status(403);
+        throw AppError({
+          message: "User is deactivated!",
+          statusCode: 403
+        })
+      }
+
       //compare password with hashedpassword
       if (user && (await comparePassword(password, user.password))) {
         const accessToken = await generateToken(user);
@@ -465,6 +473,39 @@ export function getUserRouter(options: RouterOptions = {}) {
     }),
   );
 
+  router.put(
+    "/:id/reactivate",
+    getDBUser,
+    catchAsync(async (req: Request, res: Response) => {
+      const { id } = req.params;
+
+      const user = await userModel.getOneById(id);
+      if (!user) {
+        throw AppError({ message: "User was not found", statusCode: 404 });
+      } else if (!req.user!.organization._id.equals(user.organization._id)) {
+        throw AppError({
+          message: "Users not in the same organization",
+          statusCode: 403,
+        });
+      } else if (req.user!.role !== "owner") {
+        throw AppError({
+          message: "Only owners can reactivate other users",
+          statusCode: 403,
+        });
+      }
+
+      if (user.status === "activated") {
+        return res.status(200).json({activated: true});
+      }
+
+      const updatedUser = await userModel
+        .getOneByIdAndUpdate(id, { status: "activated" })
+        .populate("organization");
+
+      return res.status(200).json({activated: true});
+    }),
+  );
+
   router.delete(
     "/:id",
     getDBUser,
@@ -486,11 +527,12 @@ export function getUserRouter(options: RouterOptions = {}) {
         });
       }
 
-      await userModel.deleteOneById(id);
-      const profile_id = user?.profile?._id;
-      if (profile_id) {
-        await profileModel.deleteOneById(profile_id);
-      }
+      await userModel.getOneByIdAndUpdate(id, { status: "deactivated" });
+      // We don't delete the profile anymore to keep user data
+      // const profile_id = user?.profile?._id;
+      // if (profile_id) {
+      //   await profileModel.deleteOneById(profile_id);
+      // }
 
       try {
         // Decrease the seats count in the plan state
