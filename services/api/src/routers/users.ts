@@ -447,11 +447,12 @@ export function getUserRouter(options: RouterOptions = {}) {
         });
       }
 
-      await userModel.deleteOneById(id);
-      const profile_id = user?.profile?._id;
-      if (profile_id) {
-        await profileModel.deleteOneById(profile_id);
-      }
+      await userModel.getOneByIdAndUpdate(id, { status: "deactivated" });
+      // We don't delete the profile anymore to keep user data
+      // const profile_id = user?.profile?._id;
+      // if (profile_id) {
+      //   await profileModel.deleteOneById(profile_id);
+      // }
 
       try {
         // Decrease the seats count in the plan state
