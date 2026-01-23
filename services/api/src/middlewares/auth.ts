@@ -68,7 +68,7 @@ export const checkAuth = async function (
 
 export const getDBUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user = await getUserFromRequest(req, [{ path: "plan" }]);
+    const user = await getUserFromRequest(req);
 
     req.user = user;
     next();
