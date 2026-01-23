@@ -17,13 +17,13 @@ export function InviteMembers() {
 
   if (!isInviteMembersEnabled) return null;
   return (
-    <div className="flex flex-col gap-4 px-6 py-5">
-      <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4 px-6 py-5 InviteMembers__Container">
+      <div className="flex flex-col gap-3 InviteMembers__InputsContainer">
         {emails.map((email) => (
           <EmailInput key={email.id} id={email.id} email={email.text} />
         ))}
       </div>
-      <div>
+      <div className="InviteMembers__AddAnotherButtonContainer">
         <Button size="sm" color="link-color" onClick={addEmail}>
           Add another
         </Button>
@@ -68,9 +68,10 @@ function EmailInput({ email, id }: { email: string; id: string }) {
 
   const hasEmailInputError = Boolean(emailInputError);
   return (
-    <div className="flex flex-row gap-2">
-      <div className="w-95">
+    <div className="flex flex-row gap-2 EmailInput__Container">
+      <div className="w-95 EmailInput__InputContainer">
         <Input
+          className="EmailInput__Input"
           size="sm"
           value={email}
           onChange={handleChange}
@@ -81,13 +82,13 @@ function EmailInput({ email, id }: { email: string; id: string }) {
           open={hasEmailInputError}
           size="sm"
           color="error"
-          className="mt-2"
+          className="mt-2 EmailInput__FormHint"
         >
           {emailInputError}
         </FormHint>
       </div>
       <ButtonUtility
-        className="p-2.5"
+        className="p-2.5 EmailInput__Button"
         size="xs"
         color="secondary"
         tooltip="Delete"
