@@ -923,6 +923,7 @@
     --width-confirmation-modal: 544px;
     --width-change-password-modal: 450px;
     --width-generic-modal: 640px;
+    --width-confirmation-modal: 500px;
     --width-auth-container: 360px;
 
     /* max widths */
@@ -932,6 +933,7 @@
     --max-width-confirmation-modal: 544px;
     --max-width-change-password-modal: 450px;
     --max-width-generic-modal: 640px;
+    --max-width-confirmation-modal: 500px;
     --max-width-auth-container: 360px;
 
     /* min widths */
@@ -941,6 +943,7 @@
     --min-width-confirmation-modal: 544px;
     --min-width-change-password-modal: 450px;
     --min-width-generic-modal: 640px;
+    --min-width-confirmation-modal: 500px;
     --min-width-auth-container: 360px;
 
     /* heights */

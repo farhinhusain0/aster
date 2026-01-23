@@ -96,7 +96,7 @@ interface GenericModalProps {
   onSecondaryButtonClick?: () => void;
   children?: React.ReactNode;
   hasError?: boolean;
-  variant?: "base" | "change-password";
+  variant?: "base" | "confirmation" | "change-password";
 }
 
 export const GenericModal: React.FC<GenericModalProps> = ({
@@ -114,7 +114,13 @@ export const GenericModal: React.FC<GenericModalProps> = ({
   variant = "base",
 }) => {
   const widthClass =
-    variant === "base" ? "max-w-generic-modal" : "max-w-change-password-modal";
+    variant === "base"
+      ? "max-w-generic-modal"
+      : variant === "confirmation"
+        ? "max-w-confirmation-modal"
+        : variant === "change-password"
+        ? "max-w-change-password-modal"
+        : "max-w-invite-members-modal";
 
   return (
     <ModalOverlay
