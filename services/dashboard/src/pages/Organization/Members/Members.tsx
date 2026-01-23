@@ -1,65 +1,66 @@
-import { Invitations } from "@/components/Invitations";
+import { Invitations, InviteMembers } from "@/components/Invitations";
 import OrganizationContentContainer from "../components/OrganizationContentContainer";
 import useDocumentTitle from "@/hooks/documentTitle";
-import ContentContainerCard from "@/components/common/ContentContainerCard";
-import { Input } from "@/components/base/input/input";
-import { ButtonUtility } from "@/components/base/buttons/button-utility";
-import { Trash01 } from "@untitledui/icons";
-import { Button } from "@/components/base/buttons/button";
 import { ReactNode } from "react";
+import ContentContainerCard from "@/components/common/ContentContainerCard";
+import { Button } from "@/components/base/buttons/button";
+import { useInviteUsers } from "@/api/queries/invite";
+import { invalidateOrgUsersQuery } from "@/api/queries/users";
+import { toast } from "react-hot-toast";
+import { invalidateMe } from "@/api/queries/auth";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEmailStore } from "@/components/Invitations/store";
 
 export function InviteMembersCard() {
+  const { mutateAsync: inviteUsers } = useInviteUsers();
+  const queryClient = useQueryClient();
+  const { invalidEmails, isAllEmailsEmpty, getValidEmails, resetEmails } =
+    useEmailStore();
+
+  const validEmailsCount = getValidEmails().length;
+  const isInviteDisabled =
+    invalidEmails.length > 0 || isAllEmailsEmpty || validEmailsCount === 0;
+
+  const handleInviteUsers = async () => {
+    try {
+      const validEmails = getValidEmails();
+
+      if (validEmailsCount === 0) {
+        return;
+      }
+
+      const emails = validEmails.map((email) => email.text);
+      const promise = inviteUsers(emails);
+      const messages =
+        emails.length > 1
+          ? {
+              loading: "Sending invites...",
+              success: "Invites sent.",
+              error: "Invites failed.",
+            }
+          : {
+              loading: "Sending invite.",
+              success: "Invite sent.",
+              error: "Invite failed.",
+            };
+      toast.promise(promise, messages);
+
+      await promise;
+      resetEmails();
+      invalidateOrgUsersQuery(queryClient);
+      invalidateMe(queryClient);
+    } catch (error) {
+      console.error(`Error inviting users: ${error}`);
+    }
+  };
   return (
     <ContentContainerCard>
       <ContentContainerCard.Header>INVITE MEMBERS</ContentContainerCard.Header>
-      <div className="px-6 py-5">
-        <div className="flex gap-2 pb-4">
-          <div className="w-95">
-            <Input size="sm" placeholder="name@company.com" />
-          </div>
-          <ButtonUtility
-            className="p-2.5"
-            size="xs"
-            color="secondary"
-            tooltip="Delete"
-            icon={Trash01}
-          />
-        </div>
-
-        <div className="flex gap-2 pb-4">
-          <div className="w-95">
-            <Input size="sm" placeholder="name@company.com" />
-          </div>
-          <ButtonUtility
-            className="p-2.5"
-            size="xs"
-            color="secondary"
-            tooltip="Delete"
-            icon={Trash01}
-          />
-        </div>
-
-        <div className="flex gap-2 pb-4">
-          <div className="w-95">
-            <Input size="sm" placeholder="name@company.com" />
-          </div>
-          <ButtonUtility
-            className="p-2.5"
-            size="xs"
-            color="secondary"
-            tooltip="Delete"
-            icon={Trash01}
-          />
-        </div>
-        <div>
-          <Button size="sm" color="link-color">
-            Add another
-          </Button>
-        </div>
-      </div>
-
+      <InviteMembers />
       <ContentContainerCard.Footer>
-        <Button>Invite</Button>
+        <Button onClick={handleInviteUsers} isDisabled={isInviteDisabled}>
+          Invite
+        </Button>
       </ContentContainerCard.Footer>
     </ContentContainerCard>
   );

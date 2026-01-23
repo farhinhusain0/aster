@@ -1,27 +1,25 @@
 import React from "react";
-import { DeleteMemberModal, ChangeRoleModal } from "./modals";
+import { DeleteMemberModal, ChangeRoleModal, OnlyAdminDialog } from "./modals";
 import {
   useDeleteUser,
   useOrgUsers,
   useChangeRole,
-} from "../../api/queries/users";
-import { useInviteUsers } from "../../api/queries/invite";
+  invalidateOrgUsersQuery,
+} from "@/api/queries/users";
 import toast from "react-hot-toast";
-import { invalidateMe, useMe } from "../../api/queries/auth";
-import { useFeatures } from "../../api/queries/features";
+import { useMe } from "@/api/queries/auth";
 import { Input } from "@/components/base/input/input";
 import { SearchMd } from "@untitledui/icons";
-import { Table, TableCard } from "../application/table/table";
-import { Tabs } from "../application/tabs/tabs";
+import { Table, TableCard } from "@/components/application/table/table";
+import { Tabs } from "@/components/application/tabs/tabs";
 import { Key } from "react-aria-components";
-import { Avatar } from "../base/avatar/avatar";
-import Typography from "../common/Typography";
-import { Select } from "../base/select/select";
+import { Avatar } from "@/components/base/avatar/avatar";
+import Typography from "@/components/common/Typography";
+import { Select } from "@/components/base/select/select";
 import { IEnrichedUser } from "@/api/calls/users";
-import { OnlyAdminDialog } from "./modals/OnlyAdminDialog";
 import { useDisclosure } from "@/hooks/modal";
 import { useQueryClient } from "@tanstack/react-query";
-import ContentContainerCard from "../common/ContentContainerCard";
+import ContentContainerCard from "@/components/common/ContentContainerCard";
 
 const TABS = [
   {
@@ -51,7 +49,6 @@ const Invitations = () => {
   const changeRoleDisclosure = useDisclosure({ animationDuration: 300 });
   const deleteDisclosure = useDisclosure({ animationDuration: 300 });
   const onlyAdminDialogDisclosure = useDisclosure({ animationDuration: 300 });
-  const inviteDisclosure = useDisclosure({ animationDuration: 300 });
   const {
     isOpen: changeRoleOpen,
     setIsOpen: setChangeRoleOpen,
@@ -67,19 +64,11 @@ const Invitations = () => {
     setIsOpen: setOnlyAdminDialogOpen,
     shouldRender: shouldRenderOnlyAdminDialogModal,
   } = onlyAdminDialogDisclosure;
-  const {
-    isOpen: inviteOpen,
-    setIsOpen: setInviteOpen,
-    shouldRender: shouldRenderInviteModal,
-  } = inviteDisclosure;
 
   const [contextMember, setContextMember] =
     React.useState<IEnrichedUser | null>(null);
   const [tab, setTab] = React.useState<Key>("all");
   const { data: user } = useMe();
-  const featuresQuery = useFeatures();
-
-  const isInviteMembersEnabled = featuresQuery.data?.isInviteMembersEnabled;
 
   const organizationId = user?.organization._id;
 
@@ -108,31 +97,9 @@ const Invitations = () => {
     return _users;
   }, [search, usersQuery.isPending, usersQuery.data, tab]);
 
-  const { mutateAsync: inviteUsers } = useInviteUsers();
   const { mutateAsync: deleteUser } = useDeleteUser();
   const { mutateAsync: changeRole } = useChangeRole();
 
-  const handleInviteUsers = async (emails: string[]) => {
-    setInviteOpen(false);
-    const promise = inviteUsers(emails);
-    const messages =
-      emails.length > 1
-        ? {
-            loading: "Sending invites...",
-            success: "Invites sent.",
-            error: "Invites failed.",
-          }
-        : {
-            loading: "Sending invite.",
-            success: "Invite sent.",
-            error: "Invite failed.",
-          };
-    toast.promise(promise, messages);
-
-    await promise;
-    usersQuery.refetch();
-    invalidateMe(queryClient);
-  };
   const handleDeleteUser = async () => {
     setDeleteOpen(false);
 
@@ -146,7 +113,7 @@ const Invitations = () => {
     });
 
     await promise;
-    usersQuery.refetch();
+    invalidateOrgUsersQuery(queryClient);
     setContextMember(null);
   };
   const handleChangeRole = async () => {
@@ -165,7 +132,7 @@ const Invitations = () => {
     });
 
     await promise;
-    usersQuery.refetch();
+    invalidateOrgUsersQuery(queryClient);
     setContextMember(null);
   };
 
