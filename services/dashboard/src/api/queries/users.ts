@@ -8,6 +8,8 @@ import {
   changePassword,
   logout,
   validateToken,
+  activateUser,
+  deactivateUser,
 } from "../calls/users";
 
 export const useOrgUsers = (organizationId: string | undefined) => {
@@ -60,6 +62,22 @@ export const useChangeRole = () => {
     mutationKey: ["changeRole"],
     mutationFn: async (data: { id: string; role: string }) =>
       changeRole(axios, data),
+  });
+};
+
+export const useDeactivateUser = () => {
+  const axios = useAxios();
+  return useMutation({
+    mutationKey: ["deactivateUser"],
+    mutationFn: async (id: string) => deactivateUser(axios, id),
+  });
+};
+
+export const useActivateUser = () => {
+  const axios = useAxios();
+  return useMutation({
+    mutationKey: ["activateUser"],
+    mutationFn: async (id: string) => activateUser(axios, id),
   });
 };
 
