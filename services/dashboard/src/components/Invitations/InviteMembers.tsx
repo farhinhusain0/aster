@@ -56,7 +56,7 @@ export function EmailInput({ email, id, validateOnChange }: EmailInputProps) {
     .filter((user) => user.status === "activated")
     .map((user) => user.email);
   const [emailInputError, setEmailInputError] = useState("");
-  const { updateEmail, deleteEmail, emails } = useEmailStore();
+  const { updateEmail, deleteEmail, totalEmailsLength } = useEmailStore();
 
   const handleChange = (value: string) => {
     // Get extra validators
@@ -106,7 +106,7 @@ export function EmailInput({ email, id, validateOnChange }: EmailInputProps) {
           {emailInputError}
         </FormHint>
       </div>
-      {emails.length > 1 && (
+      {totalEmailsLength > 1 && (
         <ButtonUtility
           className="p-2.5 EmailInput-deleteButton"
           size="xs"

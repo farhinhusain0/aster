@@ -21,6 +21,7 @@ interface EmailStore {
   emails: Email[];
   invalidEmails: Email[];
   isAllEmailsEmpty: boolean;
+  totalEmailsLength: number;
   addEmail: () => void;
   deleteEmail: (id: string) => void;
   updateEmail: (id: string, text: string, isValid: boolean) => void;
@@ -34,6 +35,7 @@ export const useEmailStore = create<EmailStore>((set, get) => {
       (email) => !email.isValid && email.text.trim() !== "",
     ),
     isAllEmailsEmpty: emails.every((email) => email.text.trim() === ""),
+    totalEmailsLength: emails.length,
   });
 
   const initialDerived = computeDerived(INITIAL_EMAILS);
@@ -42,6 +44,7 @@ export const useEmailStore = create<EmailStore>((set, get) => {
     emails: INITIAL_EMAILS,
     invalidEmails: initialDerived.invalidEmails,
     isAllEmailsEmpty: initialDerived.isAllEmailsEmpty,
+    totalEmailsLength: initialDerived.totalEmailsLength,
     addEmail: () =>
       set((state) => {
         const newEmails = [...state.emails, getEmptyEmail()];
