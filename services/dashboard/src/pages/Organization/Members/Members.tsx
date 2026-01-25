@@ -1,4 +1,4 @@
-import { Invitations, InviteMembers } from "@/components/Invitations";
+import { Invitations } from "@/components/Invitations";
 import OrganizationContentContainer from "../components/OrganizationContentContainer";
 import useDocumentTitle from "@/hooks/documentTitle";
 import { ReactNode } from "react";
@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 import { invalidateMe } from "@/api/queries/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEmailStore } from "@/components/Invitations/store";
+import { InviteMembers } from "@/components/Invitations";
 
 export function InviteMembersCard() {
   const { mutateAsync: inviteUsers } = useInviteUsers();
@@ -80,6 +81,7 @@ export function OrganizationMembersContainer({
 
 export const OrganizationMembersPage = () => {
   useDocumentTitle("Members | Aster");
+
   return (
     <OrganizationMembersContainer>
       <InviteMembersCard />

@@ -8,9 +8,13 @@ import FormHint from "@/components/common/FormHint";
 import { useState } from "react";
 import { validateEmail } from "@/utils/validators";
 import { useMe } from "@/api/queries/auth";
-import { useEmailStore } from "./store";
+import { Email, useEmailStore } from "./store";
 
-export function InviteMembers() {
+export function InviteMembers({
+  renderEmailInput,
+}: {
+  renderEmailInput?: (email: Email) => React.ReactNode;
+}) {
   const featuresQuery = useFeatures();
   const isInviteMembersEnabled = featuresQuery.data?.isInviteMembersEnabled;
   const { emails, addEmail } = useEmailStore();
@@ -19,11 +23,15 @@ export function InviteMembers() {
   return (
     <div className="flex flex-col gap-4 px-6 py-5 InviteMembers-container">
       <div className="flex flex-col gap-3 InviteMembers-inputsContainer">
-        {emails.map((email) => (
-          <EmailInput key={email.id} id={email.id} email={email.text} />
-        ))}
+        {emails.map((email) =>
+          renderEmailInput ? (
+            renderEmailInput(email)
+          ) : (
+            <EmailInput key={email.id} id={email.id} email={email.text} />
+          ),
+        )}
       </div>
-      <div className="InviteMembers__AddAnotherButtonContainer">
+      <div className="InviteMembers-addAnotherButtonContainer">
         <Button size="sm" color="link-color" onClick={addEmail}>
           Add another
         </Button>
@@ -32,7 +40,16 @@ export function InviteMembers() {
   );
 }
 
-function EmailInput({ email, id }: { email: string; id: string }) {
+interface EmailInputProps {
+  email: string;
+  id: string;
+  validateOnChange?: (
+    value: string,
+    setEmailInputError: (error: string) => void,
+  ) => boolean;
+}
+
+export function EmailInput({ email, id, validateOnChange }: EmailInputProps) {
   const { data: user } = useMe();
   const { data: users } = useOrgUsers(user?.organization._id);
   const registeredEmails = users?.users
@@ -42,27 +59,29 @@ function EmailInput({ email, id }: { email: string; id: string }) {
   const { updateEmail, deleteEmail } = useEmailStore();
 
   const handleChange = (value: string) => {
+    // Get extra validators
+    const isChangeValid = validateOnChange
+      ? validateOnChange(value, setEmailInputError)
+      : true;
+
     // Validate email format
-    const isValidEmail = validateEmail(value);
+    const isValidEmailFormat = validateEmail(value);
 
     // Validate if email is registered
-    const isRegisteredEmail = registeredEmails?.includes(value);
+    const isRegisteredEmail = registeredEmails?.includes(value) ?? false;
 
-    const isValid = isValidEmail && !isRegisteredEmail;
+    const isValid = isValidEmailFormat && !isRegisteredEmail && isChangeValid;
 
     updateEmail(id, value, isValid);
 
-    // Unless the typed email is valid we won't show the input
-    // error message. But we will count the isValid to decide if the form is valid.
-    if (!isValidEmail) {
+    // If the typed email is not a valid email format or the email is valid we don't show the error message.
+    if (!isValidEmailFormat || isValid) {
       setEmailInputError("");
       return;
     }
 
     if (isRegisteredEmail) {
       setEmailInputError("Email already registered");
-    } else {
-      setEmailInputError("");
     }
   };
 
