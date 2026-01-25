@@ -68,10 +68,10 @@ function EmailInput({ email, id }: { email: string; id: string }) {
 
   const hasEmailInputError = Boolean(emailInputError);
   return (
-    <div className="flex flex-row gap-2 EmailInput__Container">
-      <div className="w-95 EmailInput__InputContainer">
+    <div className="flex flex-row gap-2 EmailInput-container">
+      <div className="w-95 EmailInput-inputContainer">
         <Input
-          className="EmailInput__Input"
+          className="EmailInput-input"
           size="sm"
           value={email}
           onChange={handleChange}
@@ -82,13 +82,13 @@ function EmailInput({ email, id }: { email: string; id: string }) {
           open={hasEmailInputError}
           size="sm"
           color="error"
-          className="mt-2 EmailInput__FormHint"
+          className="mt-2 EmailInput-formHint"
         >
           {emailInputError}
         </FormHint>
       </div>
       <ButtonUtility
-        className="p-2.5 EmailInput__Button"
+        className="p-2.5 EmailInput-deleteButton"
         size="xs"
         color="secondary"
         tooltip="Delete"
