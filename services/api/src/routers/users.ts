@@ -487,17 +487,6 @@ export function getUserRouter(options: RouterOptions = {}) {
       //   await profileModel.deleteOneById(profile_id);
       // }
 
-      try {
-        // Decrease the seats count in the plan state
-        await decrementPlanFieldState({
-          organizationId: String(user.organization._id),
-          fieldCode: PlanFieldCode.seats,
-        });
-      } catch (error) {
-        console.error("Failed to decrement plan field state:", error);
-        // We don't throw an error here, as we want to proceed with user deletion
-      }
-
       return res.status(200).json({ deleted: true });
     }),
   );
