@@ -29,6 +29,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import ContentContainerCard from "@/components/common/ContentContainerCard";
 import { Button } from "../base/buttons/button";
 import { IOrganization } from "@/api/calls/organizations";
+import { cx } from "@/utils/cx";
 
 const TABS = [
   {
@@ -115,6 +116,10 @@ const Invitations = () => {
       _users = _users.filter((user) => user.status === DEACTIVATE.id);
     } else if (tab === "all") {
       _users = _users.filter((user) => user.status === ACTIVATE.id);
+    }
+
+    if (_users.length === 0) {
+      setTab("all");
     }
 
     if (search) {
@@ -356,14 +361,15 @@ const Invitations = () => {
                           aria-labelledby="Member actions"
                           selectedKey={row.role as Key}
                           size="sm"
-                          items={ACTIONS_BY_STATUS[
-                            row.status as keyof typeof ACTIONS_BY_STATUS
-                          ].filter((action) =>
-                            action.id === DEACTIVATE.id
-                              ? row._id !== user?._id
-                              : true,
+                          items={
+                            ACTIONS_BY_STATUS[
+                              row.status as keyof typeof ACTIONS_BY_STATUS
+                            ]
+                          }
+                          className={cx(
+                            "min-w-[133px]",
+                            user?._id === row._id && "[&_svg]:hidden [&_button]:disabled:bg-white [&_button]:disabled:text-primary",
                           )}
-                          className={"min-w-[133px]"}
                           onSelectionChange={(value) =>
                             handleSelectionChange(value, row)
                           }
