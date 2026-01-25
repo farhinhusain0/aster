@@ -480,6 +480,12 @@ export function getUserRouter(options: RouterOptions = {}) {
         });
       }
 
+      if (user.status === "invited"){
+        // delete the user
+        await userModel.deleteOneById(id);
+        return res.status(200).json({ deleted: true });
+      }
+
       await userModel.getOneByIdAndUpdate(id, { status: "deactivated" });
       // We don't delete the profile anymore to keep user data
       // const profile_id = user?.profile?._id;
