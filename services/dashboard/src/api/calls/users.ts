@@ -123,6 +123,28 @@ export const changeRole = async (
   }
 };
 
+export const deactivateUser = async (axios: AxiosInstance, id: string) => {
+  try {
+    const response = await axios.put(`/users/${id}/`, {
+      status: "deactivated",
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+export const activateUser = async (axios: AxiosInstance, id: string) => {
+  try {
+    const response = await axios.put(`/users/${id}`, { status: "activated" });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 export const logout = async (axios: AxiosInstance) => {
   try {
     const response = await axios.post(`/users/logout`);

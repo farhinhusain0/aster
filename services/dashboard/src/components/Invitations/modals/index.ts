@@ -1,3 +1,4 @@
 export { DeleteMemberModal } from "./DeleteMember";
-export { ChangeRoleModal } from "./ChangeRole";
 export { OnlyAdminDialog } from "./OnlyAdminDialog";
+export { ActivateMemberModal } from "./ActivateMember";
+export { DeactivateMemberModal } from "./DeactivateMember";
