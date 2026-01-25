@@ -56,7 +56,7 @@ export function EmailInput({ email, id, validateOnChange }: EmailInputProps) {
     .filter((user) => user.status === "activated")
     .map((user) => user.email);
   const [emailInputError, setEmailInputError] = useState("");
-  const { updateEmail, deleteEmail } = useEmailStore();
+  const { updateEmail, deleteEmail, emails } = useEmailStore();
 
   const handleChange = (value: string) => {
     // Get extra validators
@@ -106,14 +106,15 @@ export function EmailInput({ email, id, validateOnChange }: EmailInputProps) {
           {emailInputError}
         </FormHint>
       </div>
-      <ButtonUtility
-        className="p-2.5 EmailInput-deleteButton"
-        size="xs"
-        color="secondary"
-        tooltip="Delete"
-        icon={Trash01}
-        onClick={() => deleteEmail(id)}
-      />
+      {emails.length > 1 && (
+        <ButtonUtility
+          className="p-2.5 EmailInput-deleteButton"
+          size="xs"
+          color="secondary"
+          icon={Trash01}
+          onClick={() => deleteEmail(id)}
+        />
+      )}
     </div>
   );
 }
