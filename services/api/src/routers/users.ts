@@ -201,7 +201,7 @@ export function getUserRouter(options: RouterOptions = {}) {
       if (!email || !password) {
         res.status(400);
         throw AppError({
-          message: "All fields are mandatory!",
+          message: "All fields are mandatory",
           statusCode: 400,
         });
       }
@@ -218,7 +218,7 @@ export function getUserRouter(options: RouterOptions = {}) {
       if (user.status === "deactivated"){
         res.status(403);
         throw AppError({
-          message: "User is deactivated!",
+          message: "User is deactivated",
           statusCode: 403
         })
       }
