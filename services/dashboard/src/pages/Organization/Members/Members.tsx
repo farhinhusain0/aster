@@ -54,6 +54,7 @@ export function InviteMembersCard({ children }: { children: ReactNode }) {
       console.error(`Error inviting users: ${error}`);
     }
   };
+
   return (
     <ContentContainerCard>
       <ContentContainerCard.Header>INVITE MEMBERS</ContentContainerCard.Header>
