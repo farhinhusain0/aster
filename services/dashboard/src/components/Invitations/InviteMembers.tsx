@@ -17,8 +17,8 @@ export function InviteMembers() {
 
   if (!isInviteMembersEnabled) return null;
   return (
-    <div className="flex flex-col gap-4 px-6 py-5 InviteMembers__Container">
-      <div className="flex flex-col gap-3 InviteMembers__InputsContainer">
+    <div className="flex flex-col gap-4 px-6 py-5 InviteMembers-container">
+      <div className="flex flex-col gap-3 InviteMembers-inputsContainer">
         {emails.map((email) => (
           <EmailInput key={email.id} id={email.id} email={email.text} />
         ))}
