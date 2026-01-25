@@ -12,9 +12,9 @@ const DeleteMemberModal = ({ open, onClose, onSubmit }: Props) => {
       open={open}
       onClose={onClose}
       onSubmit={onSubmit}
-      title="Delete member"
-      description="Are you sure you want to delete this member?"
-      confirmText="Delete member"
+      title="Delete member?"
+      description="They'll no longer be able to join your organization."
+      confirmText="Delete"
       cancelText="Cancel"
       confirmButtonColor="primary-destructive"
     />
