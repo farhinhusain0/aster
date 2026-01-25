@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { useAxios } from "../hooks";
 import {
   deleteUser,
@@ -18,6 +18,10 @@ export const useOrgUsers = (organizationId: string | undefined) => {
     enabled: !!organizationId,
   });
 };
+
+export function invalidateOrgUsersQuery(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: ["orgUsers"] });
+}
 
 export const useUpdateUserMutation = () => {
   const axios = useAxios();

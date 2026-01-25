@@ -1,7 +1,9 @@
+import { cx } from "@/utils/cx";
 import Typography from "./Typography";
 
 interface ContentProps {
   children: React.ReactNode;
+  className?: string;
 }
 
 interface RootProps {
@@ -23,8 +25,10 @@ function Root({ children }: RootProps) {
   );
 }
 
-function Content({ children }: ContentProps) {
-  return <div className="flex flex-col p-6 gap-6">{children}</div>;
+function Content({ children, className }: ContentProps) {
+  return (
+    <div className={cx("flex flex-col p-6 gap-6", className)}>{children}</div>
+  );
 }
 
 function Header({ children }: HeaderProps) {

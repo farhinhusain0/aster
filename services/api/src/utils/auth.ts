@@ -3,9 +3,22 @@ import { Request } from "express";
 import { prepareLocallyUploadedImageUrl } from "./uploads";
 import { AppError, ErrorCode } from "../errors";
 
+/**
+ * Creates a transform function that prepares image URLs for a given field
+ */
+function createImageUrlTransform(fieldName: string) {
+  return (doc: any) => {
+    if (doc?.[fieldName]) {
+      doc[fieldName] = prepareLocallyUploadedImageUrl(doc[fieldName]);
+    }
+    return doc;
+  };
+}
+
 export async function getUserFromRequest(
   req: Request,
-  organizationPopulate: { path: string }[],
+  populate: { path: string }[] = [],
+  organizationPopulate: { path: string }[] = [],
 ): Promise<IUser> {
   const userId = req.decodedUser!.id;
   const user = await userModel
@@ -13,23 +26,14 @@ export async function getUserFromRequest(
     .select("-password")
     .populate({
       path: "organization",
-      transform: (doc) => {
-        if (doc && doc.logo) {
-          doc.logo = prepareLocallyUploadedImageUrl(doc.logo);
-        }
-        return doc;
-      },
-      populate: organizationPopulate,
+      transform: createImageUrlTransform("logo"),
+      populate: [{ path: "plan" }, ...organizationPopulate],
     })
     .populate({
       path: "profile",
-      transform: (doc) => {
-        if (doc && doc.picture) {
-          doc.picture = prepareLocallyUploadedImageUrl(doc.picture);
-        }
-        return doc;
-      },
-    });
+      transform: createImageUrlTransform("picture"),
+    })
+    .populate(populate);
 
   if (!user) {
     throw AppError({
