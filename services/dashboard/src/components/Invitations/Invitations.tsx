@@ -4,6 +4,7 @@ import {
   OnlyAdminDialog,
   ActivateMemberModal,
   DeactivateMemberModal,
+  RevokeInviteModal
 } from "./modals";
 import {
   useDeleteUser,
@@ -27,7 +28,7 @@ import { IEnrichedUser } from "@/api/calls/users";
 import { useDisclosure } from "@/hooks/modal";
 import { useQueryClient } from "@tanstack/react-query";
 import ContentContainerCard from "@/components/common/ContentContainerCard";
-import { Button } from "../base/buttons/button";
+import { Button } from "@/components/base/buttons/button";
 import { IOrganization } from "@/api/calls/organizations";
 import { cx } from "@/utils/cx";
 
@@ -71,6 +72,7 @@ const Invitations = () => {
   const onlyAdminDialogDisclosure = useDisclosure({ animationDuration: 300 });
   const activateDisclosure = useDisclosure({ animationDuration: 300 });
   const deactivateDisclosure = useDisclosure({ animationDuration: 300 });
+  const revokeInviteDisclosure = useDisclosure({ animationDuration: 300 });
   const {
     isOpen: deleteOpen,
     setIsOpen: setDeleteOpen,
@@ -91,6 +93,11 @@ const Invitations = () => {
     setIsOpen: setDeactivateOpen,
     shouldRender: shouldRenderDeactivateModal,
   } = deactivateDisclosure;
+  const {
+    isOpen: revokeInviteOpen,
+    setIsOpen: setRevokeInviteOpen,
+    shouldRender: shouldRenderRevokeInviteModal,
+  } = revokeInviteDisclosure;
   const [contextMember, setContextMember] =
     React.useState<IEnrichedUser | null>(null);
   const [tab, setTab] = React.useState<Key>("all");
@@ -172,6 +179,7 @@ const Invitations = () => {
     invalidateOrgUsersQuery(queryClient);
     setContextMember(null);
   };
+  
   const handleChangeRole = async (user: IEnrichedUser) => {
     if (!user || !user.role || ![ADMIN.id, MEMBER.id].includes(user.role))
       return;
@@ -247,6 +255,20 @@ const Invitations = () => {
     setContextMember(null);
   };
 
+  const handleRevokeInvite = async () => {
+    setRevokeInviteOpen(false);
+    if (!contextMember) return;
+    const promise = deleteUser(contextMember._id);
+    toast.promise(promise, {
+      loading: "Revoking invite.",
+      success: "Invite revoked.",
+      error: "Revoke failed.",
+    });
+    await promise;
+    invalidateOrgUsersQuery(queryClient);
+    setContextMember(null);
+  };
+
   return (
     <>
       {shouldRenderDeleteModal && (
@@ -281,6 +303,15 @@ const Invitations = () => {
           onSubmit={handleActivate}
           user={contextMember as IEnrichedUser}
           organization={organization as IOrganization}
+        />
+      )}
+
+      {shouldRenderRevokeInviteModal && (
+        <RevokeInviteModal
+          open={revokeInviteOpen}
+          onClose={() => setRevokeInviteOpen(false)}
+          onSubmit={handleRevokeInvite}
+          email={contextMember?.email || ""}
         />
       )}
 
@@ -354,6 +385,17 @@ const Invitations = () => {
                           onClick={() => handleActivateClick(row)}
                         >
                           Activate
+                        </Button>
+                      ) : row.status === INVITED.id ? (
+                        <Button
+                          color="secondary"
+                          size="sm"
+                          onClick={() => {
+                            setContextMember(row);
+                            setRevokeInviteOpen(true);
+                          }}
+                        >
+                          Revoke invite
                         </Button>
                       ) : (
                         <Select
