@@ -81,7 +81,7 @@ export function EmailInput({ email, id, validateOnChange }: EmailInputProps) {
     }
 
     if (isRegisteredEmail) {
-      setEmailInputError("Email already registered");
+      setEmailInputError("Already a member");
     }
   };
 
