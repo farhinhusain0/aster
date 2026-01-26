@@ -56,7 +56,10 @@ export function InviteMembersCard({ children }: { children: ReactNode }) {
     }
   };
 
-  return (
+  const featuresQuery = useFeatures();
+  const isInviteMembersEnabled = featuresQuery.data?.isInviteMembersEnabled;
+
+  return isInviteMembersEnabled ? (
     <ContentContainerCard>
       <ContentContainerCard.Header>INVITE MEMBERS</ContentContainerCard.Header>
       {children}
@@ -66,7 +69,7 @@ export function InviteMembersCard({ children }: { children: ReactNode }) {
         </Button>
       </ContentContainerCard.Footer>
     </ContentContainerCard>
-  );
+  ) : null;
 }
 
 export function OrganizationMembersContainer({
@@ -84,14 +87,11 @@ export function OrganizationMembersContainer({
 export const OrganizationMembersPage = () => {
   useDocumentTitle("Members | Aster");
 
-  const featuresQuery = useFeatures();
-  const isInviteMembersEnabled = featuresQuery.data?.isInviteMembersEnabled;
-
   return (
     <OrganizationMembersContainer>
-      {isInviteMembersEnabled && <InviteMembersCard>
+      <InviteMembersCard>
         <InviteMembers />
-      </InviteMembersCard>}
+      </InviteMembersCard>
       <Invitations />
     </OrganizationMembersContainer>
   );
