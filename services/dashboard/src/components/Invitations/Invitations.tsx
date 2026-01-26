@@ -53,15 +53,12 @@ const TABS = [
 
 const ADMIN = { label: "Admin", id: "owner" };
 const MEMBER = { label: "Member", id: "member" };
-const DELETE = { label: "Delete", id: "delete" };
 const ACTIVATE = { label: "Activate", id: "activated" };
 const DEACTIVATE = { label: "Deactivate", id: "deactivated" };
 const INVITED = { label: "Invited", id: "invited" };
 
 const ACTIONS_BY_STATUS = {
   activated: [ADMIN, MEMBER, DEACTIVATE],
-  invited: [ADMIN, MEMBER, DELETE],
-  deactivated: [ACTIVATE],
 };
 
 const Invitations = () => {
@@ -202,10 +199,7 @@ const Invitations = () => {
   const handleSelectionChange = (value: Key | null, row: IEnrichedUser) => {
     if (!value) return;
 
-    if (value === DELETE.id) {
-      setContextMember(row as IEnrichedUser);
-      setDeleteOpen(true);
-    } else if (value === DEACTIVATE.id) {
+    if (value === DEACTIVATE.id) {
       setContextMember(row as IEnrichedUser);
       setDeactivateOpen(true);
     } else {
@@ -421,7 +415,6 @@ const Invitations = () => {
                             <Select.Item
                               {...item}
                               isDanger={
-                                item.id === DELETE.id ||
                                 item.id === DEACTIVATE.id
                               }
                             />
