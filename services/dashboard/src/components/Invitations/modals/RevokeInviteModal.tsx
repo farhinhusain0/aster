@@ -4,21 +4,22 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSubmit: () => void;
+  email: string;
 }
 
-const DeleteMemberModal = ({ open, onClose, onSubmit }: Props) => {
+const RevokeInviteModal = ({ open, onClose, onSubmit, email }: Props) => {
   return (
     <ConfirmationModal
       open={open}
       onClose={onClose}
       onSubmit={onSubmit}
-      title="Delete member?"
+      title={`Revoke invite for ${email}?`}
       description="They'll no longer be able to join your organization."
-      confirmText="Delete"
+      confirmText="Revoke"
       cancelText="Cancel"
       confirmButtonColor="primary-destructive"
     />
   );
 };
 
-export { DeleteMemberModal };
+export { RevokeInviteModal };

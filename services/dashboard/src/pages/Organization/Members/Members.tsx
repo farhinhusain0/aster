@@ -11,6 +11,7 @@ import { invalidateMe } from "@/api/queries/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEmailStore } from "@/components/Invitations/store";
 import { InviteMembers } from "@/components/Invitations";
+import { useFeatures } from "@/api/queries/features";
 
 export function InviteMembersCard({ children }: { children: ReactNode }) {
   const { mutateAsync: inviteUsers } = useInviteUsers();
@@ -55,7 +56,10 @@ export function InviteMembersCard({ children }: { children: ReactNode }) {
     }
   };
 
-  return (
+  const featuresQuery = useFeatures();
+  const isInviteMembersEnabled = featuresQuery.data?.isInviteMembersEnabled;
+
+  return isInviteMembersEnabled ? (
     <ContentContainerCard>
       <ContentContainerCard.Header>INVITE MEMBERS</ContentContainerCard.Header>
       {children}
@@ -65,7 +69,7 @@ export function InviteMembersCard({ children }: { children: ReactNode }) {
         </Button>
       </ContentContainerCard.Footer>
     </ContentContainerCard>
-  );
+  ) : null;
 }
 
 export function OrganizationMembersContainer({
