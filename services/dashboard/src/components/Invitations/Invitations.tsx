@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  DeleteMemberModal,
   OnlyAdminDialog,
   ActivateMemberModal,
   DeactivateMemberModal,
@@ -65,16 +64,12 @@ const Invitations = () => {
   const queryClient = useQueryClient();
   const [search, setSearch] = React.useState<string>("");
 
-  const deleteDisclosure = useDisclosure({ animationDuration: 300 });
+
   const onlyAdminDialogDisclosure = useDisclosure({ animationDuration: 300 });
   const activateDisclosure = useDisclosure({ animationDuration: 300 });
   const deactivateDisclosure = useDisclosure({ animationDuration: 300 });
   const revokeInviteDisclosure = useDisclosure({ animationDuration: 300 });
-  const {
-    isOpen: deleteOpen,
-    setIsOpen: setDeleteOpen,
-    shouldRender: shouldRenderDeleteModal,
-  } = deleteDisclosure;
+
   const {
     isOpen: onlyAdminDialogOpen,
     setIsOpen: setOnlyAdminDialogOpen,
@@ -159,23 +154,6 @@ const Invitations = () => {
   const { mutateAsync: changeRole } = useChangeRole();
   const { mutateAsync: deactivateUser } = useDeactivateUser();
   const { mutateAsync: activateUser } = useActivateUser();
-
-  const handleDeleteUser = async () => {
-    setDeleteOpen(false);
-
-    if (!contextMember) return;
-
-    const promise = deleteUser(contextMember._id);
-    toast.promise(promise, {
-      loading: "Deleting user.",
-      success: "User deleted.",
-      error: "Delete failed.",
-    });
-
-    await promise;
-    invalidateOrgUsersQuery(queryClient);
-    setContextMember(null);
-  };
   
   const handleChangeRole = async (user: IEnrichedUser) => {
     if (!user || !user.role || ![ADMIN.id, MEMBER.id].includes(user.role))
@@ -265,14 +243,6 @@ const Invitations = () => {
 
   return (
     <>
-      {shouldRenderDeleteModal && (
-        <DeleteMemberModal
-          open={deleteOpen}
-          onClose={() => setDeleteOpen(false)}
-          onSubmit={handleDeleteUser}
-        />
-      )}
-
       {shouldRenderOnlyAdminDialogModal && (
         <OnlyAdminDialog
           open={onlyAdminDialogOpen}
