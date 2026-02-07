@@ -22,7 +22,15 @@ export default async function (context: RunContext) {
   return Promise.resolve(
     new DynamicStructuredTool({
       name: "semantic_search",
-      description: `Perform semantic search across multiple sources of information, get top 5 results, and assist in root cause hypothesis generation.`,
+      description: `Perform semantic search across multiple sources of information, get top 5 results
+      
+      You can use this tool to access:
+      - The indexed codebase files from GitHub.
+      - The indexed documentation from Notion.
+      - The indexed messages from Slack.
+      - The indexed incident messages from PagerDuty.
+      - The indexed documentation from Confluence.
+      - The indexed issues from Jira.`,
       func: async ({
         query,
         incidentLabel,
