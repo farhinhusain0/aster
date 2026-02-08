@@ -1,4 +1,6 @@
 import os
+import shutil
+import asyncio
 from bson import ObjectId
 
 if os.getenv("OS_ENV") == "linux":
@@ -13,6 +15,7 @@ import uvicorn
 from db import init_db
 from db.organization import organization_model
 from db.job import job_model
+from db.snapshot import snapshot_model
 from db.db_types import Job
 
 if os.getenv("IS_DOCKER") != "true":
@@ -30,6 +33,10 @@ app = FastAPI()
 class BuildSnapshotRequestData(BaseModel):
     organizationId: str
     dataSources: Optional[List[str]] = None
+
+
+class DeleteSnapshotsRequestData(BaseModel):
+    organizationId: str
 
 
 # Root route
@@ -72,6 +79,39 @@ async def start_build_snapshot(
 
     print("returning job")
     return job
+
+
+@app.post("/delete-snapshots")
+async def delete_snapshots(data: DeleteSnapshotsRequestData):
+    """Delete snapshot folders from the file system for an organization."""
+    organization_id = data.organizationId
+
+    print(f"Deleting snapshots for organization {organization_id}")
+
+    # Get all snapshots for the organization
+    snapshots = await snapshot_model.get({"organization": ObjectId(organization_id)})
+
+    # Delete snapshot folders from file system
+    snapshots_directory = os.getenv("SNAPSHOTS_DIRECTORY")
+    if not snapshots_directory:
+        print("SNAPSHOTS_DIRECTORY not set, skipping snapshot folder deletion")
+        return {"message": "SNAPSHOTS_DIRECTORY not set", "deleted_count": 0}
+
+    deleted_count = 0
+    for snapshot in snapshots:
+        snapshot_id = str(snapshot.id)
+        snapshot_folder_path = os.path.join(snapshots_directory, snapshot_id)
+        try:
+            if os.path.exists(snapshot_folder_path):
+                await asyncio.to_thread(shutil.rmtree, snapshot_folder_path)
+                print(f"Deleted snapshot folder: {snapshot_folder_path}")
+                deleted_count += 1
+        except Exception as err:
+            print(f"Failed to delete snapshot folder {snapshot_folder_path}: {err}")
+            # Continue with deletion even if folder deletion fails
+
+    print(f"Deleted {deleted_count} snapshot folder(s)")
+    return {"message": "Snapshots deleted", "deleted_count": deleted_count}
 
 
 if __name__ == "__main__":

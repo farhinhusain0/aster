@@ -150,8 +150,21 @@ router.delete(
       console.log("Failed to delete vector index", err);
     }
 
+    // Delete snapshot folders from file system via data-processor service
+    try {
+      const dataProcessorUrl = process.env.DATA_PROCESSOR_URL as string;
+      await axios.post(`${dataProcessorUrl}/delete-snapshots`, {
+        organizationId: String(req.user!.organization._id),
+      });
+      console.log("Deleted snapshot folders via data-processor service");
+    } catch (err) {
+      console.log("Failed to delete snapshot folders via data-processor:", err);
+      // Continue with deletion even if snapshot folder deletion fails
+    }
+
     // Delete internal index
     await indexModel.deleteOneById(id);
+    // Delete snapshots from database
     await snapshotModel.delete({ organization: req.user!.organization._id });
 
     return res.status(200).json({ message: "Successfully deleted index" });
