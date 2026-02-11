@@ -17,7 +17,7 @@ class ChromaDBVectorStore(BaseVectorStore):
     ):
         self.collection_name = collection_name
         settings = Settings(
-            chroma_auth_token_transport_header="X_CHROMA_TOKEN",
+            chroma_auth_token_transport_header="X-Chroma-Token",
             chroma_client_auth_provider="chromadb.auth.token_authn.TokenAuthClientProvider",
             chroma_client_auth_credentials=api_key,
         )

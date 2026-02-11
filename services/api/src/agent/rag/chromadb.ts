@@ -7,12 +7,27 @@ export class ChromaDBVectorStore implements VectorStore {
   private readonly collectionName: string;
 
   constructor(host: string, apiKey: string, collectionName: string) {
+    let finalHost = host;
+    let finalPort: number | undefined;
+    let finalSsl = false;
+
+    try {
+      if (host.startsWith("http")) {
+        const url = new URL(host);
+        finalHost = url.hostname;
+        finalPort = url.port ? parseInt(url.port) : undefined;
+        finalSsl = url.protocol === "https:";
+      }
+    } catch (e) {
+      console.error("Failed to parse ChromaDB host URL, using as is:", host);
+    }
+
     this.chroma = new ChromaClient({
-      path: host,
-      auth: {
-        provider: "token",
-        credentials: apiKey,
-        tokenHeaderType: "X_CHROMA_TOKEN",
+      host: finalHost,
+      port: finalPort,
+      ssl: finalSsl,
+      headers: {
+        "X-Chroma-Token": apiKey,
       },
     });
     this.collectionName = collectionName;
@@ -34,16 +49,16 @@ export class ChromaDBVectorStore implements VectorStore {
     });
 
     const response = await collection.query({
-      queryEmbeddings: vector,
+      queryEmbeddings: [vector],
       nResults: topK,
       include: [
-        IncludeEnum.Metadatas,
-        IncludeEnum.Documents,
-        IncludeEnum.Embeddings,
-        IncludeEnum.Distances,
+        IncludeEnum.metadatas,
+        IncludeEnum.documents,
+        IncludeEnum.embeddings,
+        IncludeEnum.distances,
       ],
       // TODO: haven't checked this
-      where: metadata,
+      where: metadata && Object.keys(metadata).length > 0 ? metadata : undefined,
     });
 
     if (!response.documents) {

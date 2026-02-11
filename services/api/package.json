@@ -5,6 +5,7 @@
   "dependencies": {
     "@aster/db": "*",
     "@aster/utils": "*",
+    "@chroma-core/default-embed": "^0.1.9",
     "@datadog/datadog-api-client": "^1.21.0",
     "@langchain/anthropic": "^1.0.0",
     "@langchain/core": "^1.0.0",
@@ -16,7 +17,7 @@
     "axios": "^1.6.2",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.19.0",
-    "chromadb": "1.9.1",
+    "chromadb": "^3.3.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "date-fns": "^3.0.6",
@@ -33,7 +34,6 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.13",
     "octokit": "^3.1.2",
-
     "prometheus-query": "^3.4.0",
     "sharp": "^0.34.3",
     "slackify-markdown": "^4.4.0",

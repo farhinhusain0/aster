@@ -24,13 +24,13 @@ services:
       - MONGO_INITDB_ROOT_USERNAME
     command: ["--auth"]
   chroma-common:
-    image: chromadb/chroma:0.5.1
+    image: chromadb/chroma:1.4.1
     container_name: chroma
     profiles: ["app", "infra"]
     ports:
       - "${CHROMA_PORT}:${CHROMA_PORT}"
     volumes:
-      - ${DATA_DIR}/chromadb:/chroma/chroma
+      - ${DATA_DIR}/chromadb:/data
     environment:
       - CHROMA_SERVER_AUTHN_CREDENTIALS
       - CHROMA_SERVER_AUTHN_PROVIDER
