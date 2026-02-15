@@ -457,6 +457,7 @@ export interface IInvestigation {
   createdAt: Date;
   updatedAt: Date;
   jsmDetails?: Object | null;
+  secondaryInvestigationId?: string;
 }
 
 export interface IInvestigationCheck {

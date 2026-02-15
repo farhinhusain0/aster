@@ -55,6 +55,7 @@ export interface RunContext {
    * If the agent is being run for a follow-up then `investigationId` will not be present
    */
   investigationId?: string;
+  secondaryInvestigationId?: string;
   env: string;
   organizationName: string;
   organizationId: string;

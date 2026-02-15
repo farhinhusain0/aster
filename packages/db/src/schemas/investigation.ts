@@ -29,6 +29,9 @@ export const InvestigationSchema = new Schema<IInvestigation>(
       type: Schema.Types.Mixed,
       default: {},
     },
+    secondaryInvestigationId: {
+      type: String,
+    },
   },
   { timestamps: true },
 );
