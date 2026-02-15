@@ -33,7 +33,7 @@ export default async function (context: RunContext) {
       - The indexed documentation from Confluence.
       - The indexed issues from Jira.
       
-      Currently indexed sources are: ${index?.dataSources?.join(", ")}`,
+      Currently indexed source names are: ${index?.dataSources?.join(", ")}. Use the source name exactly as it is.`,
       func: async ({
         query,
         incidentLabel,
@@ -165,7 +165,7 @@ export default async function (context: RunContext) {
         source: z
           .string()
           .describe(
-            "A source to search from which is currently indexed. For example: github, notion, slack, pagerduty, confluence, jira",
+            `A source to search from which is currently indexed. For example: Github, Notion, Slack, PagerDuty, Confluence, Jira`,
           ),
         query: z
           .string()

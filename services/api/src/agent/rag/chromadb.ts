@@ -6,28 +6,19 @@ export class ChromaDBVectorStore implements VectorStore {
   private readonly chroma: ChromaClient;
   private readonly collectionName: string;
 
-  constructor(host: string, apiKey: string, collectionName: string) {
-    let finalHost = host;
-    let finalPort: number | undefined;
-    let finalSsl = false;
-
-    try {
-      if (host.startsWith("http")) {
-        const url = new URL(host);
-        finalHost = url.hostname;
-        finalPort = url.port ? parseInt(url.port) : undefined;
-        finalSsl = url.protocol === "https:";
-      }
-    } catch (e) {
-      console.error("Failed to parse ChromaDB host URL, using as is:", host);
-    }
-
+  constructor(
+    host: string,
+    port: number,
+    ssl: boolean,
+    apiKey: string,
+    collectionName: string,
+  ) {
     this.chroma = new ChromaClient({
-      host: finalHost,
-      port: finalPort,
-      ssl: finalSsl,
+      host: host,
+      port: port,
+      ssl: ssl,
       headers: {
-        "X-Chroma-Token": apiKey,
+        [process.env.CHROMA_AUTH_TOKEN_TRANSPORT_HEADER as string]: apiKey,
       },
     });
     this.collectionName = collectionName;
@@ -58,7 +49,8 @@ export class ChromaDBVectorStore implements VectorStore {
         IncludeEnum.distances,
       ],
       // TODO: haven't checked this
-      where: metadata && Object.keys(metadata).length > 0 ? metadata : undefined,
+      where:
+        metadata && Object.keys(metadata).length > 0 ? metadata : undefined,
     });
 
     if (!response.documents) {

@@ -14,6 +14,8 @@ export class VectorStoresManager {
     this.validateChromaDBEnvironment();
     return new ChromaDBVectorStore(
       process.env.CHROMA_HOST as string,
+      parseInt(process.env.CHROMA_PORT as string),
+      process.env.CHROMA_SSL === "true",
       process.env.CHROMA_API_KEY as string,
       indexName,
     );
