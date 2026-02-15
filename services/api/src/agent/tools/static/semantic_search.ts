@@ -6,6 +6,7 @@ import {
   investigationCheckModel,
   investigationModel,
   indexModel,
+  VendorName,
 } from "@aster/db";
 import { Document, nodesToText } from "../../rag";
 import { checksSummaryPrompt, dataExplanationPrompt } from "../../prompts";
@@ -22,7 +23,7 @@ export default async function (context: RunContext) {
   return Promise.resolve(
     new DynamicStructuredTool({
       name: "semantic_search",
-      description: `Perform semantic search across multiple sources of information, get top 5 results
+      description: `Perform semantic search across multiple sources of information, get top 10 results
       
       You can use this tool to access:
       - The indexed codebase files from GitHub.
@@ -30,24 +31,33 @@ export default async function (context: RunContext) {
       - The indexed messages from Slack.
       - The indexed incident messages from PagerDuty.
       - The indexed documentation from Confluence.
-      - The indexed issues from Jira.`,
+      - The indexed issues from Jira.
+      
+      Currently indexed sources are: ${index?.dataSources?.join(", ")}`,
       func: async ({
         query,
         incidentLabel,
+        source,
       }: {
         query: string;
         incidentLabel: string;
+        source: string;
       }) => {
         try {
           const chatModel = context.chatModel;
           console.log("####### inside semantic search tool ########");
           console.log("Query:", query);
+          console.log("Source:", source);
 
           if (!index) {
             return "Knowledge base is not set up. Tool is not available.";
           }
           const vectorStore = context.getVectorStore(index.name, index.type);
-          const documents = await vectorStore.query({ query, topK: 3 });
+          const documents = await vectorStore.query({
+            query,
+            topK: 10,
+            ...(index.dataSources.includes(source as VendorName) && { metadata: { source } }),
+          });
           documents.sort((a, b) => b.score - a.score);
 
           const text = nodesToText(documents);
@@ -61,7 +71,7 @@ export default async function (context: RunContext) {
             if (context.shouldGenerateChecks && investigation) {
               const githubDocuments = [] as Document[];
               documents.forEach((document) => {
-                if (document.metadata.source === "Github") {
+                if (document.metadata.source === VendorName.Github) {
                   githubDocuments.push(document);
                 }
               });
@@ -152,6 +162,11 @@ export default async function (context: RunContext) {
         }
       },
       schema: z.object({
+        source: z
+          .enum(index?.dataSources as string[])
+          .describe(
+            "A source to search from which is currently indexed. For example: github, notio, slack, pagerduty, confluence, jira",
+          ),
         query: z
           .string()
           .describe(
