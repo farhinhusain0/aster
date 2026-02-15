@@ -11,20 +11,16 @@ export const makeChatNode = (llm: ChatOpenAI, tools: Tool[]) => {
     
     const agent = createAgent({
       model: llm,
-      tools: tools
+      tools: tools,
+      systemPrompt: chatSystemPrompt
     });
 
     const aiResponse = await agent.invoke({
-      messages: [
-        new SystemMessage({content: chatSystemPrompt}),
-        ...state.messages,
-        new HumanMessage({ content: state.input })
-      ]
+      messages: state.messages
     });
 
-    const len = aiResponse.messages.length;
-    const response = len > 0 ? aiResponse.messages[len-1].content : "Something went wrong!";
-
-    return { response };
+    return { 
+      messages: aiResponse.messages 
+    };
   };
 };

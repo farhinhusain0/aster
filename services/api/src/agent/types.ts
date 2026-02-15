@@ -15,6 +15,7 @@ import { Annotation } from "@langchain/langgraph";
 import { AnswerContext } from "./callbacks";
 import { VectorStore } from "./rag/types";
 const { OpenAIEmbedding } = require("llamaindex");
+import { MessagesAnnotation } from "@langchain/langgraph";
 
 // Langchain helper types
 export type ChatMessage = AIMessage | HumanMessage;
@@ -99,9 +100,9 @@ export interface RunModelParams {
 
 // Graph State Definition
 export const StateDefinition = Annotation.Root({
+  ...MessagesAnnotation.spec,
   input: Annotation<string>,
   response: Annotation<string | undefined>,
-  messages: Annotation<ChatMessage[]>,
   router_decision: Annotation<"analyze" | "chat">,
   analysis_report: Annotation<string | undefined>,
 });
