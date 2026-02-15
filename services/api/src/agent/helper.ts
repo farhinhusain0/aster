@@ -19,6 +19,10 @@ import {
 import { Callbacks } from "@langchain/core/callbacks/manager";
 import { getChatModel as getChatModelFn } from "./model";
 import { createGraph } from "./graph";
+import { HumanMessage } from "@langchain/core/messages";
+
+import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
+import mongoose from "mongoose";
 
 export function generateTrace(context: RunContext) {
   const langfuse = new Langfuse({
@@ -105,7 +109,15 @@ export async function runAgent({
       }),
     );
   }
-  const graph = createGraph(model, tools);
+  const client = mongoose.connection.getClient() as any;
+  // Polyfill appendMetadata if it doesn't exist (due to older mongodb driver in mongoose)
+  if (!client.appendMetadata) {
+    client.appendMetadata = () => {};
+  }
+  const memory = new MongoDBSaver({
+    client,
+  });
+  const graph = createGraph(model, tools, memory);
   const result = await graph.invoke({
     messages: messages || [],
     input: prompt,
