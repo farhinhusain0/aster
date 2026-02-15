@@ -74,6 +74,7 @@ export class ChatCompletions {
     const organizationId = String(organization._id);
     const chatModel = await this.getChatModel();
     const isInvestigation = this.req.body.isInvestigation || false;
+    const secondaryInvestigationId = this.req.body.secondaryInvestigationId;
 
     return {
       email,
@@ -82,6 +83,7 @@ export class ChatCompletions {
       organizationName,
       organizationId,
       isInvestigation,
+      secondaryInvestigationId,
       context: "chat",
       initiatedBy,
       chatModel,
@@ -97,6 +99,7 @@ export class ChatCompletions {
       messages,
       metadata: requestMetadata = {},
       isInvestigation,
+      secondaryInvestigationId,
     } = this.req.body;
 
     const organization = await this.getOrganization();
