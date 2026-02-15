@@ -72,19 +72,32 @@ export async function runAgent({
     context.organizationId as string,
   )) as IOrganization;
 
-  /**
-   * When we are running the agent for any follow-up then we don't need to create a new investigation
-   */
   let investigation = null;
   if (context?.isInvestigation) {
+    console.log("### creating new investigation ###");
     investigation = await investigationModel.create({
       status: "init",
       createdAt: new Date(),
       updatedAt: new Date(),
       organization: organization,
+      secondaryInvestigationId: context.secondaryInvestigationId,
     });
     context = { ...context, investigationId: investigation._id.toString() };
+  } else if (context?.secondaryInvestigationId) {
+    console.log("### fetching existing investigation ###");
+    investigation = await investigationModel.getOne({
+      secondaryInvestigationId: context.secondaryInvestigationId,
+    });
+    if (investigation) {
+      context = { ...context, investigationId: investigation._id.toString() };
+    }
   }
+
+  console.log("### investigation id ###");
+  console.log(investigation?._id.toString());
+
+  console.log("### secondary investigation id ###");
+  console.log(context.secondaryInvestigationId);
 
   const populatedIntegrations =
     await secretManager.populateCredentials(integrations);
