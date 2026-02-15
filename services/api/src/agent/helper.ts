@@ -119,11 +119,10 @@ export async function runAgent({
   });
   const graph = createGraph(model, tools, memory);
   const result = await graph.invoke({
-    messages: messages || [],
-    input: prompt,
-  });
+    messages: new HumanMessage({ content: prompt })
+  }, { configurable: { thread_id: investigation?._id.toString() || context?.secondaryInvestigationId } });
 
-  const output = result.response;
+  const output = result.messages[result.messages.length - 1].content;
 
   const answer = buildAnswer(
     output as string,
