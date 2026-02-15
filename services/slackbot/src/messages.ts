@@ -21,6 +21,16 @@ export function attachMessages(app: App) {
     // The solution in the meantime is to cast the message to Casting to GenericMessageEvent
     console.log("Received message!");
     const message = msg as GenericMessageEvent;
+    console.log("########### logging message ##########");
+    console.log(message);
+    console.log("########### message end ##########");
+
+    // If the message is in a thread, i.e a follow up message, the secondary investigation identifier is the alert message timestamp(thread_ts)
+    // Otherwise, if the message is alert message or a direct message, it's the message timestamp(ts)
+    const seconderyInvestigationIdentifier = message?.thread_ts || message?.ts;
+
+    console.log("### logging seconderyInvestigationIdentifier ###");
+    console.log(seconderyInvestigationIdentifier);
 
     const botUserId = await getMyId(client);
     console.log("Got id:");
@@ -118,6 +128,7 @@ export function attachMessages(app: App) {
           team,
           metadata,
           isInvestigation: shouldAutoInvestigate,
+          secondaryInvestigationId: seconderyInvestigationIdentifier,
         });
 
       let investigationExtraBlocks = [] as Object[];
