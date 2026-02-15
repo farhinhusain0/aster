@@ -1,8 +1,7 @@
 import { App } from "@slack/bolt";
 import { Block, GenericMessageEvent } from "@slack/types";
 import { addFeedbackReactions, addReaction, getMyId } from "./utils/slack";
-import { BotNames } from "./constants";
-import { extractEventId, parseMessage } from "./lib";
+import { parseMessage } from "./lib";
 import { getCompletion, errorMap } from "./api/chat";
 import { createInvestigation } from "./api/investigation";
 
@@ -74,37 +73,10 @@ export function attachMessages(app: App) {
     await addReaction(client, message.channel, message.ts, "eyes");
 
     try {
-      let messages;
+      const messages = [
+        await parseMessage(message, botUserId!, client.token!),
+      ];
       const metadata = {} as { eventId: string };
-      if (message.thread_ts) {
-        const historyResponse = await client.conversations.replies({
-          channel: message.channel,
-          ts: message.thread_ts,
-          inclusive: true,
-        });
-        if (!historyResponse.messages) {
-          console.log("No messages found");
-          throw new Error("No messages found");
-        }
-        const firstMessage = historyResponse.messages[0];
-        if (
-          firstMessage.bot_profile &&
-          BotNames.includes(firstMessage.bot_profile.name!)
-        ) {
-          const eventId = extractEventId(firstMessage);
-          metadata.eventId = eventId;
-        }
-        messages = await Promise.all(
-          historyResponse.messages.map((msg) =>
-            parseMessage(msg, botUserId!, client.token!),
-          ),
-        );
-      } else {
-        // We use Promise.all here since we want to build an array with a single value.
-        messages = await Promise.all([
-          parseMessage(message, botUserId!, client.token!),
-        ]);
-      }
 
       const { team } = message;
       if (!team) {
