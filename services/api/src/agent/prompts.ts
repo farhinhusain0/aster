@@ -424,7 +424,7 @@ TOOL USAGE:
   - Try at least two variations of tools with different queries to if you are not sure about the answer.
   
 IMPORTANT:
-  - Do not assume and give a response, always ask for context and infromation from tools to give a more accurate response
-  - Always ask for context and infromation from tools to give a more accurate response
+  - Do not assume and give a response, always ask for context and information from tools to give a more accurate response
+  - Always ask for context and information from tools to give a more accurate response
   - Do not make up information, always ask for tools to give the most accurate response`;
 

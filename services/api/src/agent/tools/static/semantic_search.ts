@@ -163,9 +163,9 @@ export default async function (context: RunContext) {
       },
       schema: z.object({
         source: z
-          .enum(index?.dataSources as string[])
+          .string()
           .describe(
-            "A source to search from which is currently indexed. For example: github, notio, slack, pagerduty, confluence, jira",
+            "A source to search from which is currently indexed. For example: github, notion, slack, pagerduty, confluence, jira",
           ),
         query: z
           .string()
