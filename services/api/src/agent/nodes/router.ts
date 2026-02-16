@@ -8,7 +8,7 @@ export const makeRouterNode = (llm: ChatOpenAI) => {
     console.log("### Router Node");
     const result = await llm.invoke([
       new SystemMessage(routerPrompt),
-      new HumanMessage(state.input)
+      ...state.messages
     ]);
     const decision = result.content.toString().trim().toLowerCase();
     console.log(`### Router Decision: ${decision}`);

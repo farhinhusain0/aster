@@ -15,7 +15,8 @@ import {
 
 const createGraph = (
   llm: ChatOpenAI,
-  tools: Tool[]
+  tools: Tool[],
+  memory: any
 ) => {
 
   // Instantiate nodes with dependencies
@@ -37,7 +38,7 @@ const createGraph = (
   .addEdge("analyzer", "hypothesis")
   .addEdge("hypothesis", END)
   .addEdge("chat", END)
-  .compile();
+  .compile({ checkpointer: memory });
 
   return graph;
 

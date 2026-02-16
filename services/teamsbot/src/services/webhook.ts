@@ -127,6 +127,7 @@ export async function handleTeamsSubscriptionNotification(
             ],
             tenantId,
             isInvestigation: true,
+            secondaryInvestigationId: messageId,
           });
 
           console.log("\n=============Response=============\n");

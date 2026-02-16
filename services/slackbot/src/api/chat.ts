@@ -7,13 +7,15 @@ interface CompletionParams {
   team: string;
   metadata?: Record<string, string>;
   isInvestigation?: boolean;
+  secondaryInvestigationId?: string;
 }
 export async function getCompletion({
   messages,
   email,
   team,
   metadata,
-  isInvestigation
+  isInvestigation,
+  secondaryInvestigationId
 }: CompletionParams) {
   const response = await axios.post(
     `${process.env.API_URL}/chat/completions/slack`,
@@ -21,6 +23,7 @@ export async function getCompletion({
       messages,
       metadata,
       isInvestigation,
+      secondaryInvestigationId,
     },
     {
       headers: {

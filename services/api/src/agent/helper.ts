@@ -19,6 +19,10 @@ import {
 import { Callbacks } from "@langchain/core/callbacks/manager";
 import { getChatModel as getChatModelFn } from "./model";
 import { createGraph } from "./graph";
+import { HumanMessage } from "@langchain/core/messages";
+
+import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
+import mongoose from "mongoose";
 
 export function generateTrace(context: RunContext) {
   const langfuse = new Langfuse({
@@ -68,19 +72,32 @@ export async function runAgent({
     context.organizationId as string,
   )) as IOrganization;
 
-  /**
-   * When we are running the agent for any follow-up then we don't need to create a new investigation
-   */
   let investigation = null;
   if (context?.isInvestigation) {
+    console.log("### creating new investigation ###");
     investigation = await investigationModel.create({
       status: "init",
       createdAt: new Date(),
       updatedAt: new Date(),
       organization: organization,
+      secondaryInvestigationId: context.secondaryInvestigationId,
     });
     context = { ...context, investigationId: investigation._id.toString() };
+  } else if (context?.secondaryInvestigationId) {
+    console.log("### fetching existing investigation ###");
+    investigation = await investigationModel.getOne({
+      secondaryInvestigationId: context.secondaryInvestigationId,
+    });
+    if (investigation) {
+      context = { ...context, investigationId: investigation._id.toString() };
+    }
   }
+
+  console.log("### investigation id ###");
+  console.log(investigation?._id.toString());
+
+  console.log("### secondary investigation id ###");
+  console.log(context.secondaryInvestigationId);
 
   const populatedIntegrations =
     await secretManager.populateCredentials(integrations);
@@ -105,13 +122,20 @@ export async function runAgent({
       }),
     );
   }
-  const graph = createGraph(model, tools);
-  const result = await graph.invoke({
-    messages: messages || [],
-    input: prompt,
+  const client = mongoose.connection.getClient() as any;
+  // Polyfill appendMetadata if it doesn't exist (due to older mongodb driver in mongoose)
+  if (!client.appendMetadata) {
+    client.appendMetadata = () => {};
+  }
+  const memory = new MongoDBSaver({
+    client,
   });
+  const graph = createGraph(model, tools, memory);
+  const result = await graph.invoke({
+    messages: new HumanMessage({ content: prompt })
+  }, { configurable: { thread_id: investigation?._id.toString() || context?.secondaryInvestigationId } });
 
-  const output = result.response;
+  const output = result.messages[result.messages.length - 1].content;
 
   const answer = buildAnswer(
     output as string,

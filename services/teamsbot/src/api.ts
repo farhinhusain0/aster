@@ -6,6 +6,7 @@ interface CompletionParams {
   email?: string;
   tenantId: string;
   isInvestigation: boolean;
+  secondaryInvestigationId?: string;
 }
 
 export async function getCompletion({
@@ -13,6 +14,7 @@ export async function getCompletion({
   email,
   tenantId,
   isInvestigation,
+  secondaryInvestigationId
 }: CompletionParams) {
   const response = await axios.post(
     `${process.env.API_URL}/chat/completions/teams`,
@@ -20,6 +22,7 @@ export async function getCompletion({
       messages,
       metadata: {},
       isInvestigation,
+      secondaryInvestigationId
     },
     {
       headers: {

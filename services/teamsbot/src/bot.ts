@@ -38,6 +38,9 @@ class TeamsBot extends ActivityHandler {
             messages: await this.parseMessagesForAster(context),
             tenantId: context.activity.channelData.tenant.id,
             isInvestigation: false,
+            secondaryInvestigationId: getConversationParentMessageId(
+              context.activity.conversation.id,
+            ),
           });
 
           console.log("\n=============Response=============\n");
@@ -173,8 +176,9 @@ class TeamsBot extends ActivityHandler {
         content,
       };
     });
-
-    return messages;
+    
+    // return array containing only the last message
+    return messages.slice(-1);
   };
 
   private getAllMessagesFromActivity = async (context: TurnContext) => {

@@ -1,8 +1,7 @@
 import { App } from "@slack/bolt";
 import { Block, GenericMessageEvent } from "@slack/types";
 import { addFeedbackReactions, addReaction, getMyId } from "./utils/slack";
-import { BotNames } from "./constants";
-import { extractEventId, parseMessage } from "./lib";
+import { parseMessage } from "./lib";
 import { getCompletion, errorMap } from "./api/chat";
 import { createInvestigation } from "./api/investigation";
 
@@ -21,6 +20,16 @@ export function attachMessages(app: App) {
     // The solution in the meantime is to cast the message to Casting to GenericMessageEvent
     console.log("Received message!");
     const message = msg as GenericMessageEvent;
+    console.log("########### logging message ##########");
+    console.log(message);
+    console.log("########### message end ##########");
+
+    // If the message is in a thread, i.e a follow up message, the secondary investigation identifier is the alert message timestamp(thread_ts)
+    // Otherwise, if the message is alert message or a direct message, it's the message timestamp(ts)
+    const seconderyInvestigationIdentifier = message?.thread_ts || message?.ts;
+
+    console.log("### logging seconderyInvestigationIdentifier ###");
+    console.log(seconderyInvestigationIdentifier);
 
     const botUserId = await getMyId(client);
     console.log("Got id:");
@@ -64,37 +73,10 @@ export function attachMessages(app: App) {
     await addReaction(client, message.channel, message.ts, "eyes");
 
     try {
-      let messages;
+      const messages = [
+        await parseMessage(message, botUserId!, client.token!),
+      ];
       const metadata = {} as { eventId: string };
-      if (message.thread_ts) {
-        const historyResponse = await client.conversations.replies({
-          channel: message.channel,
-          ts: message.thread_ts,
-          inclusive: true,
-        });
-        if (!historyResponse.messages) {
-          console.log("No messages found");
-          throw new Error("No messages found");
-        }
-        const firstMessage = historyResponse.messages[0];
-        if (
-          firstMessage.bot_profile &&
-          BotNames.includes(firstMessage.bot_profile.name!)
-        ) {
-          const eventId = extractEventId(firstMessage);
-          metadata.eventId = eventId;
-        }
-        messages = await Promise.all(
-          historyResponse.messages.map((msg) =>
-            parseMessage(msg, botUserId!, client.token!),
-          ),
-        );
-      } else {
-        // We use Promise.all here since we want to build an array with a single value.
-        messages = await Promise.all([
-          parseMessage(message, botUserId!, client.token!),
-        ]);
-      }
 
       const { team } = message;
       if (!team) {
@@ -118,6 +100,7 @@ export function attachMessages(app: App) {
           team,
           metadata,
           isInvestigation: shouldAutoInvestigate,
+          secondaryInvestigationId: seconderyInvestigationIdentifier,
         });
 
       let investigationExtraBlocks = [] as Object[];
