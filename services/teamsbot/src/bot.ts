@@ -176,8 +176,9 @@ class TeamsBot extends ActivityHandler {
         content,
       };
     });
-
-    return messages;
+    
+    // return array containing only the last message
+    return messages.slice(-1);
   };
 
   private getAllMessagesFromActivity = async (context: TurnContext) => {
