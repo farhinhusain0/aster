@@ -38,6 +38,9 @@ class TeamsBot extends ActivityHandler {
             messages: await this.parseMessagesForAster(context),
             tenantId: context.activity.channelData.tenant.id,
             isInvestigation: false,
+            secondaryInvestigationId: getConversationParentMessageId(
+              context.activity.conversation.id,
+            ),
           });
 
           console.log("\n=============Response=============\n");
