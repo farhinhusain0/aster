@@ -89,4 +89,4 @@ if __name__ == "__main__":
 
     init_db(mongo_uri)
 
-    uvicorn.run("main:app", port=port, reload=reload, host="0.0.0.0")
+    uvicorn.run("main:app", port=port, reload=reload, host="0.0.0.0", loop="asyncio")

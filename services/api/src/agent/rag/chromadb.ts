@@ -6,13 +6,19 @@ export class ChromaDBVectorStore implements VectorStore {
   private readonly chroma: ChromaClient;
   private readonly collectionName: string;
 
-  constructor(host: string, apiKey: string, collectionName: string) {
+  constructor(
+    host: string,
+    port: number,
+    ssl: boolean,
+    apiKey: string,
+    collectionName: string,
+  ) {
     this.chroma = new ChromaClient({
-      path: host,
-      auth: {
-        provider: "token",
-        credentials: apiKey,
-        tokenHeaderType: "X_CHROMA_TOKEN",
+      host: host,
+      port: port,
+      ssl: ssl,
+      headers: {
+        [process.env.CHROMA_AUTH_TOKEN_TRANSPORT_HEADER as string]: apiKey,
       },
     });
     this.collectionName = collectionName;
@@ -34,16 +40,17 @@ export class ChromaDBVectorStore implements VectorStore {
     });
 
     const response = await collection.query({
-      queryEmbeddings: vector,
+      queryEmbeddings: [vector],
       nResults: topK,
       include: [
-        IncludeEnum.Metadatas,
-        IncludeEnum.Documents,
-        IncludeEnum.Embeddings,
-        IncludeEnum.Distances,
+        IncludeEnum.metadatas,
+        IncludeEnum.documents,
+        IncludeEnum.embeddings,
+        IncludeEnum.distances,
       ],
       // TODO: haven't checked this
-      where: metadata,
+      where:
+        metadata && Object.keys(metadata).length > 0 ? metadata : undefined,
     });
 
     if (!response.documents) {

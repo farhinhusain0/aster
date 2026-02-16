@@ -1,4 +1,5 @@
 import chromadb
+import os
 from chromadb.config import Settings
 from .raw_vector_stores.chromadb import (
     ChromaVectorStore as LIChromaVectorStore,
@@ -17,7 +18,7 @@ class ChromaDBVectorStore(BaseVectorStore):
     ):
         self.collection_name = collection_name
         settings = Settings(
-            chroma_auth_token_transport_header="X_CHROMA_TOKEN",
+            chroma_auth_token_transport_header=os.getenv("CHROMA_AUTH_TOKEN_TRANSPORT_HEADER"),
             chroma_client_auth_provider="chromadb.auth.token_authn.TokenAuthClientProvider",
             chroma_client_auth_credentials=api_key,
         )

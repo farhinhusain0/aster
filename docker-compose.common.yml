@@ -24,13 +24,13 @@ services:
       - MONGO_INITDB_ROOT_USERNAME
     command: ["--auth"]
   chroma-common:
-    image: chromadb/chroma:0.5.1
+    image: chromadb/chroma:1.4.1
     container_name: chroma
     profiles: ["app", "infra"]
     ports:
       - "${CHROMA_PORT}:${CHROMA_PORT}"
     volumes:
-      - ${DATA_DIR}/chromadb:/chroma/chroma
+      - ${DATA_DIR}/chromadb:/data
     environment:
       - CHROMA_SERVER_AUTHN_CREDENTIALS
       - CHROMA_SERVER_AUTHN_PROVIDER
@@ -66,6 +66,8 @@ services:
       - ENCRYPTION_SALT
       - IMAGE_UPLOAD_DATA_DIRECTORY
       - CHROMA_HOST
+      - CHROMA_PORT
+      - CHROMA_SSL=false
       - CHROMA_API_KEY=${CHROMA_SERVER_AUTHN_CREDENTIALS}
       - MICROSOFT_TEAMSBOT_URL
       - MICROSOFT_APP_ID
@@ -160,9 +162,9 @@ services:
       - SNAPSHOTS_DIRECTORY
       - MONGO_URI
       - IS_DOCKER=true
-      - CHROMA_HOST=chroma
+      - CHROMA_HOST
       - CHROMA_SSL=false
-      - CHROMA_PORT=8000
+      - CHROMA_PORT
       - CHROMA_API_KEY=${CHROMA_SERVER_AUTHN_CREDENTIALS}
       - OPENAI_API_KEY
       - OPENAI_EMBEDDING_MODEL
