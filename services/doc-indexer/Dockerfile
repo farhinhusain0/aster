@@ -8,7 +8,9 @@ WORKDIR /app
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-    build-essential
+    build-essential \
+    pkg-config \
+    libcairo2-dev
 
 RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
 
