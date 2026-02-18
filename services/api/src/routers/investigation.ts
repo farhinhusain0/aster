@@ -11,10 +11,7 @@ import { checkAuth, getDBUser } from "../middlewares/auth";
 import { getSlackUser } from "../middlewares/slack";
 import { catchAsync } from "../utils/errors";
 import { AppError } from "../errors";
-import {
-  JiraServiceManagementClient,
-  PagerDutyClient,
-} from "../clients";
+import { JiraServiceManagementClient, PagerDutyClient } from "../clients";
 import { secretManager } from "../common/secrets";
 import { Types } from "mongoose";
 import { getTeamsUser } from "../middlewares/teams";
@@ -26,7 +23,14 @@ router.post(
   "/slack",
   getSlackUser, // Use the Slack middleware instead of manual token check
   catchAsync(async (req: Request, res: Response) => {
-    const { hypothesis, pdIncidentId, investigationId } = req.body;
+    const {
+      hypothesis,
+      rootCause,
+      recommendedFix,
+      confidenceLevel,
+      pdIncidentId,
+      investigationId,
+    } = req.body;
     const organizationId = String(req.user!.organization._id);
 
     // Get PagerDuty integration
@@ -58,6 +62,9 @@ router.post(
       { _id: investigationId },
       {
         hypothesis,
+        rootCause,
+        recommendedFix,
+        confidenceLevel,
         pdIncidentId,
         pdDetails: pdIncident.incident,
         status: "active",

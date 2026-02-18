@@ -120,8 +120,16 @@ function InvestigationDetailsLeftPanel() {
   const { id, checkId } = useParams();
   const { data: investigation } = useInvestigation(id || "");
 
-  const { pdDetails, jsmDetails, hypothesis, updatedAt, checks } =
-    investigation;
+  const {
+    pdDetails,
+    jsmDetails,
+    hypothesis,
+    rootCause,
+    recommendedFix,
+    confidenceLevel,
+    updatedAt,
+    checks,
+  } = investigation;
   const relativeTime = updatedAt
     ? formatDistanceToNowStrict(new Date(updatedAt), { addSuffix: true })
     : "";
@@ -162,7 +170,10 @@ function InvestigationDetailsLeftPanel() {
             />
             <div className="flex items-center gap-2">
               {/* leading-[19px] is to optically match the alignment of the source logo */}
-              <Typography variant="sm/medium" className="text-primary leading-[19px]">
+              <Typography
+                variant="sm/medium"
+                className="text-primary leading-[19px]"
+              >
                 {source}
               </Typography>
               <LinkExternal01 size={14} className="mt-0.5" />
@@ -202,6 +213,27 @@ function InvestigationDetailsLeftPanel() {
         </div>
       </div>
 
+      {rootCause && (
+        <div className="flex gap-3 flex-col justify-start items-start mb-5">
+          <Typography variant="md/semibold" className="text-primary">
+            Root cause
+          </Typography>
+
+          <Typography
+            variant="md/normal"
+            className="[&_p]:m-0 [&_a]:text-blue-600 [&_p]:break-words [&_a]:break-all [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:overflow-auto"
+          >
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {sanitizeMarkdownText(rootCause)}
+            </Markdown>
+
+            <Badge type="pill-color" size="md" color="gray">
+              {confidenceLevel}
+            </Badge>
+          </Typography>
+        </div>
+      )}
+
       <div className="flex gap-3 flex-col justify-start items-start mb-5">
         <Typography variant="md/semibold" className="text-primary">
           Hypothesis
@@ -216,6 +248,23 @@ function InvestigationDetailsLeftPanel() {
           </Markdown>
         </Typography>
       </div>
+
+      {recommendedFix && (
+        <div className="flex gap-3 flex-col justify-start items-start mb-5">
+          <Typography variant="md/semibold" className="text-primary">
+            Recommended fix
+          </Typography>
+
+          <Typography
+            variant="md/normal"
+            className="[&_p]:m-0 [&_a]:text-blue-600 [&_p]:break-words [&_a]:break-all [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:overflow-auto"
+          >
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {sanitizeMarkdownText(recommendedFix)}
+            </Markdown>
+          </Typography>
+        </div>
+      )}
 
       {checks.length > 0 && (
         <div className="flex gap-3 flex-col justify-start items-start">

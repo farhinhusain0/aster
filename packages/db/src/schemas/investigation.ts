@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IInvestigation } from "../types";
+import { InvestigationConfidenceLevel, IInvestigation } from "../types";
 
 const Schema = mongoose.Schema;
 
@@ -7,6 +7,17 @@ export const InvestigationSchema = new Schema<IInvestigation>(
   {
     hypothesis: {
       type: String,
+    },
+    rootCause: {
+      type: String,
+    },
+    recommendedFix: {
+      type: String,
+    },
+    confidenceLevel: {
+      type: String,
+      enum: InvestigationConfidenceLevel,
+      default: InvestigationConfidenceLevel.High,
     },
     organization: {
       type: Schema.Types.ObjectId,
