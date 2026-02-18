@@ -115,7 +115,8 @@ export default async function (
       if (issue == null) {
         return "No matching Sentry issue found";
       }
-      const events = await sentry.getIssueEvents(issue.id);
+      const issue_id = issue.id;
+      const events = await sentry.getIssueEvents(issue_id);
 
       // Investigation check logic (update or create) with LLM summary
       if (context.shouldGenerateChecks && investigation) {
@@ -124,10 +125,21 @@ export default async function (
           source: "sentry",
         });
 
+        const latest_event_id = events[0].id;
+        const latest_event = await sentry.getIssueEvent(
+          issue_id,
+          latest_event_id,
+        );
+        const stats = await sentry.getIssueEventsTimeseries({
+          issueId: issue_id,
+        });
+
         const action = {
           request: `Analyze Sentry issue: ${issue_title}`,
-          issue_id: issue.id,
           issue_title: issue.title,
+          issue,
+          latest_event,
+          stats,
         };
 
         // Use LLM to generate summary and explanation
