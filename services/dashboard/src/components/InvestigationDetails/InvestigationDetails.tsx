@@ -39,16 +39,6 @@ import {
 } from "@/utils/investigations";
 import PagerDutyLogo from "@/assets/logo-pagerduty.png";
 import JiraLogo from "@/assets/logo-jira-service-management.png";
-import {
-  Bar,
-  CartesianGrid,
-  ComposedChart,
-  Label,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { selectEvenlySpacedItems } from "../application/charts/charts-base";
 
 interface File {
   filename: string;
@@ -69,9 +59,9 @@ interface Check {
     files?: Array<File>;
     diffs?: object;
     issue?: object;
-    issueTitle?: string;
+    issue_title?: string;
     stats?: object;
-    latestEvent?: object;
+    latest_event?: object;
   };
 }
 
@@ -405,7 +395,6 @@ function InvestigationDetailsRightPanel() {
             action={action}
             result={result}
             source={check.source}
-            codeChangesSHA={investigation.codeChangesSHA}
           />
         </div>
       </div>
@@ -417,29 +406,9 @@ interface ExplanationBlockProps {
   action: Check["action"];
   result: Check["result"];
   source: string;
-  codeChangesSHA?: string;
 }
 
-function ExplanationBlock({
-  action,
-  result,
-  source,
-  codeChangesSHA,
-}: ExplanationBlockProps) {
-  // Show diff from `diffs` if codeChangesSHA and investigation source is github
-
-  let diff: string | null = null;
-  if (source === "github" && codeChangesSHA && action?.diffs) {
-    for (const diffList of Object.values(action.diffs)) {
-      for (const diffItem of diffList) {
-        if (diffItem.sha === codeChangesSHA) {
-          diff = diffItem.diff;
-          break;
-        }
-      }
-    }
-  }
-
+function ExplanationBlock({ action, result, source }: ExplanationBlockProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
@@ -448,87 +417,11 @@ function ExplanationBlock({
         </Typography>
         <Typography variant="md/normal">{result?.summary}</Typography>
       </div>
-
-      {diff && (
-        <div>
-          <SyntaxHighlighter language="diff">{diff}</SyntaxHighlighter>
-        </div>
-      )}
-
-      {action?.stats && (
-        <div>
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart
-              data={(action?.stats as any).timeSeries[0].values}
-              margin={{
-                left: 4,
-                right: 0,
-                top: 12,
-                bottom: 18,
-              }}
-              className="text-tertiary [&_.recharts-text]:text-xs"
-            >
-              <CartesianGrid
-                vertical={false}
-                stroke="currentColor"
-                className="text-utility-gray-100"
-              />
-              <XAxis
-                fill="currentColor"
-                axisLine={false}
-                tickLine={false}
-                tickMargin={12}
-                interval="preserveStartEnd"
-                dataKey="timestamp"
-                tickFormatter={(value) =>
-                  new Date(value).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                  })
-                }
-                ticks={selectEvenlySpacedItems(
-                  (action?.stats as any).timeSeries[0].values,
-                  3,
-                ).map((item) => item.timestamp)}
-              >
-                <Label
-                  value="Timestamp"
-                  fill="currentColor"
-                  className="!text-xs font-medium"
-                  position="bottom"
-                />
-              </XAxis>
-
-              <YAxis
-                fill="currentColor"
-                axisLine={false}
-                tickLine={false}
-                interval="preserveStartEnd"
-                dataKey="value"
-              >
-                <Label
-                  value="Count"
-                  fill="currentColor"
-                  className="!text-xs font-medium"
-                  style={{ textAnchor: "middle" }}
-                  angle={-90}
-                  position="insideLeft"
-                />
-              </YAxis>
-              <Bar
-                dataKey="value"
-                fill="var(--color-primary-500, #6366f1)"
-                radius={[4, 4, 0, 0]}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
       <div className="flex flex-col gap-3">
         <Typography variant="md/semibold">
-          {source === "github" ? "Explanation" : action?.query}
+          {source === "github"
+            ? "Explanation"
+            : action?.query || action?.issue_title}
         </Typography>
         <Typography variant="md/normal">{result?.explanation}</Typography>
       </div>

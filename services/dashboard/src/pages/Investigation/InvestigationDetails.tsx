@@ -5,16 +5,38 @@ import {
   InvestigationDetailsHypothesis,
   InvestigationDetailsHeader,
 } from "./components";
+import {
+  InvestigationDetailsLeftPanel,
+  InvestigationDetailsRightPanel,
+} from "@/components/InvestigationDetails/InvestigationDetails";
 
 function InvestigationDetails() {
   useDocumentTitle("Investigation details | Aster");
-  const { id } = useParams();
+  const { id, checkId } = useParams();
   const { data: investigation, isPending } = useInvestigation(id || "");
 
   if (isPending) {
     return null;
   } else if (!investigation) {
     return <Navigate to={"/investigations"} />;
+  }
+
+  if (!investigation.rootCause || !investigation.recommendedFix) {
+    return (
+      <div className=" w-256 mx-auto">
+        <div className="flex gap-10">
+          <div className="flex-1 min-w-0 max-w-140">
+            <InvestigationDetailsLeftPanel />
+          </div>
+
+          {checkId && (
+            <div className="flex-shrink-0 ">
+              <InvestigationDetailsRightPanel />
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -24,7 +46,9 @@ function InvestigationDetails() {
         <div className="max-w-investigation-content w-full">
           <InvestigationDetailsHypothesis />
         </div>
-        <div className="max-w-investigation-right-sidebar w-full">Right sidebar components here</div>
+        <div className="max-w-investigation-right-sidebar w-full">
+          Right sidebar components here
+        </div>
       </div>
     </div>
   );
