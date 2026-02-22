@@ -38,34 +38,37 @@ export function InvestigationDetailsHypothesis() {
         </ContentContainerCard.Header>
         <ContentContainerCard.Content>
           <div className="flex flex-col gap-4">
-            <div className="flex flex-row gap-3">
-              <div className="flex items-center justify-center min-w-9 min-h-9 rounded-lg bg-brand-50">
-                <SearchRefraction size={20} className="text-brand-600" />
+            {/* Conditionally rendering root cause for older investigation compatibility */}
+            {rootCause && (
+              <div className="flex flex-row gap-3">
+                <div className="flex items-center justify-center min-w-9 min-h-9 rounded-lg bg-brand-50">
+                  <SearchRefraction size={20} className="text-brand-600" />
+                </div>
+                <div className="flex flex-col gap-[1px]">
+                  <Typography variant="md/semibold" className="text-primary">
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                    >{`Root cause: ${rootCause}`}</Markdown>
+                  </Typography>
+                  <Typography
+                    variant="xs/normal"
+                    className={cx(
+                      "flex items-center",
+                      CONFIDENCE_LEVEL_MAP[
+                        confidenceLevel as keyof typeof CONFIDENCE_LEVEL_MAP
+                      ].className,
+                    )}
+                  >
+                    <CheckCircle size={12} className="mr-1" />
+                    {
+                      CONFIDENCE_LEVEL_MAP[
+                        confidenceLevel as keyof typeof CONFIDENCE_LEVEL_MAP
+                      ].text
+                    }
+                  </Typography>
+                </div>
               </div>
-              <div className="flex flex-col gap-[1px]">
-                <Typography variant="md/semibold" className="text-primary">
-                  <Markdown
-                    remarkPlugins={[remarkGfm]}
-                  >{`Root cause: ${rootCause}`}</Markdown>
-                </Typography>
-                <Typography
-                  variant="xs/normal"
-                  className={cx(
-                    "flex items-center",
-                    CONFIDENCE_LEVEL_MAP[
-                      confidenceLevel as keyof typeof CONFIDENCE_LEVEL_MAP
-                    ].className,
-                  )}
-                >
-                  <CheckCircle size={12} className="mr-1" />
-                  {
-                    CONFIDENCE_LEVEL_MAP[
-                      confidenceLevel as keyof typeof CONFIDENCE_LEVEL_MAP
-                    ].text
-                  }
-                </Typography>
-              </div>
-            </div>
+            )}
 
             <div>
               <Typography
@@ -78,21 +81,24 @@ export function InvestigationDetailsHypothesis() {
               </Typography>
             </div>
 
-            <div className="flex flex-row gap-2 bg-brand-50 rounded-lg p-4 border border-secondary">
-              <div className="h-5 flex items-center justify-center">
-                <Stars02 size={14} className="text-brand-600" />
+            {/* Conditionally rendering recommended fix for older investigation compatibility */}
+            {recommendedFix && (
+              <div className="flex flex-row gap-2 bg-brand-50 rounded-lg p-4 border border-secondary">
+                <div className="h-5 flex items-center justify-center">
+                  <Stars02 size={14} className="text-brand-600" />
+                </div>
+                <div>
+                  <Typography variant="sm/medium" className="text-brand-600">
+                    Recommended fix:
+                  </Typography>
+                  <Typography variant="sm/medium" className="text-primary mt-1">
+                    <Markdown remarkPlugins={[remarkGfm]}>
+                      {recommendedFix}
+                    </Markdown>
+                  </Typography>
+                </div>
               </div>
-              <div>
-                <Typography variant="sm/medium" className="text-brand-600">
-                  Recommended fix:
-                </Typography>
-                <Typography variant="sm/medium" className="text-primary mt-1">
-                  <Markdown remarkPlugins={[remarkGfm]}>
-                    {recommendedFix}
-                  </Markdown>
-                </Typography>
-              </div>
-            </div>
+            )}
           </div>
         </ContentContainerCard.Content>
       </ContentContainerCard>
