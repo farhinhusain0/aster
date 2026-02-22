@@ -51,7 +51,7 @@ export function InvestigationDetailsHeader() {
               <Typography variant="sm/medium" className="text-tertiary">
                 View on {source}
               </Typography>
-              <LinkExternal01 size={16} className="mt-0.5" />
+              <LinkExternal01 size={16} />
             </div>
           </a>
         </div>
