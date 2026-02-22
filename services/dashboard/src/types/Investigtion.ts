@@ -26,3 +26,9 @@ export interface IInvestigation {
   updatedAt: Date;
   jsmDetails?: JSMDetails | null;
 }
+
+export enum InvestigationConfidenceLevel {
+  Low = "low",
+  Medium = "medium",
+  High = "high",
+}
