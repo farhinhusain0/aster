@@ -1,4 +1,4 @@
-import { createInvestigationCardWithMarkdown } from '../utils/adaptiveCard';
+import { createInvestigationCardWithMarkdown } from "../utils/adaptiveCard";
 
 const getUnauthenticatedWelcomeCard = ({ data }: { data: Object }) => ({
   type: "AdaptiveCard",
@@ -48,13 +48,13 @@ const getAuthenticatedWelcomeCard = () => ({
 });
 
 const getInvestigationCard = ({
-  output,
+  hypothesis,
   investigationId,
 }: {
-  output: string;
+  hypothesis: string;
   investigationId: string;
 }) => {
-  return createInvestigationCardWithMarkdown({ output, investigationId });
+  return createInvestigationCardWithMarkdown({ hypothesis, investigationId });
 };
 
 export {

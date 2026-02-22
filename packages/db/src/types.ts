@@ -459,6 +459,7 @@ export interface IInvestigation {
   rootCause: string;
   recommendedFix: string;
   confidenceLevel: InvestigationConfidenceLevel;
+  codeChangesSHA: string;
   organization: IOrganization;
   // TODO: Convert to enums
   status: "init" | "active" | "resolved" | "dismissed";

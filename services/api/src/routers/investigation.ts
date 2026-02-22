@@ -27,6 +27,7 @@ router.post(
       hypothesis,
       rootCause,
       recommendedFix,
+      codeChangesSHA,
       confidenceLevel,
       pdIncidentId,
       investigationId,
@@ -65,6 +66,7 @@ router.post(
         rootCause,
         recommendedFix,
         confidenceLevel,
+        codeChangesSHA,
         pdIncidentId,
         pdDetails: pdIncident.incident,
         status: "active",
@@ -79,7 +81,16 @@ router.post(
   "/teams",
   getTeamsUser,
   catchAsync(async (req: Request, res: Response) => {
-    const { investigationId, hypothesis, vendorName, incidentId } = req.body;
+    const {
+      investigationId,
+      hypothesis,
+      rootCause,
+      confidenceLevel,
+      codeChangesSHA,
+      recommendedFix,
+      vendorName,
+      incidentId,
+    } = req.body;
 
     const investigation = await investigationModel
       .getOneById(investigationId)
@@ -154,6 +165,10 @@ router.post(
       {
         status: "active",
         hypothesis,
+        rootCause,
+        confidenceLevel,
+        codeChangesSHA,
+        recommendedFix,
         jsmDetails,
         pdDetails,
         pdIncidentId,

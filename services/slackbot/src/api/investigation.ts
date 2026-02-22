@@ -7,6 +7,7 @@ export async function createInvestigation({
   rootCause,
   recommendedFix,
   confidenceLevel,
+  codeChangesSHA,
   pdIncidentId,
   email,
   team,
@@ -16,6 +17,7 @@ export async function createInvestigation({
   rootCause: string;
   recommendedFix: string;
   confidenceLevel: InvestigationConfidenceLevel;
+  codeChangesSHA: string;
   pdIncidentId: string | undefined;
   email: string;
   team: string;
@@ -30,6 +32,7 @@ export async function createInvestigation({
       rootCause,
       recommendedFix,
       confidenceLevel,
+      codeChangesSHA,
       pdIncidentId,
     },
     {

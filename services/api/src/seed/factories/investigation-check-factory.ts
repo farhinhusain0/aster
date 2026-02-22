@@ -72,6 +72,28 @@ export const SEED_INVESTIGATION_CHECK_PRESETS = {
           text: "const Sentry = require('@sentry/node');\n\n// Copyright The OpenTelemetry Authors\n// SPDX-License-Identifier: Apache-2.0\nconst { context, propagation, trace, metrics } = require('@opentelemetry/api');\nconst cardValidator = require('simple-card-validator');\nconst { v4: uuidv4 } = require('uuid');\n\nconst { OpenFeature } = require('@openfeature/server-sdk');\nconst { FlagdProvider } = require('@openfeature/flagd-provider');\nconst flagProvider = new FlagdProvider();\n\nconst logger = require('./logger');\nconst tracer = trace.getTracer('payment');\nconst meter = metrics.getMeter('payment');\nconst transactionsCounter = meter.createCounter('app.payment.transactions');\n\nconst LOYALTY_LEVEL = ['platinum', 'gold', 'silver', 'bronze'];\n\n/** Return random element from given array */\nfunction random(arr) {\n  const index = Math.floor(Math.random() * arr.length);\n  return arr[index];\n}\n\nmodule.exports.charge = async request => {\n  const span = tracer.startSpan('charge');\n\n  await OpenFeature.setProviderAndWait(flagProvider);\n\n  const {\n    creditCardNumber: number,\n  } = request.creditCard;\n  const lastFourDigits = number.substr(-4);\n  const transactionId = uuidv4();\n\n  const card = cardValidator(number);\n  const { card_type: cardType, valid } = card.getCardDetails();\n\n  const loyalty_level = random(LOYALTY_LEVEL);\n\n  span.setAttributes({\n    'app.payment.card_type': cardType,\n    'app.payment.card_valid': valid,\n    'app.loyalty.level': loyalty_level\n  });\n\n  try {\n    // Get stripe API URL and key from environment variables\n    const STRIPE_URI = process.env.STRIPE_URL\n    const STRIPE_KEY = process.env.STRIPE_API_KEY\n\n    // Call stripe API to charge the credit card and do the payment transaction\n    await fetch(STRIPE_URI, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n        'Authorization': `Bearer ${STRIPE_KEY}`\n      },\n      body: JSON.stringify({\n        amount: request.amount,\n        currency: request.currency,\n        source: request.creditCard\n      })\n    });\n\n    const { units, nanos, currencyCode } = request.amount;\n    logger.info({ transactionId, cardType, lastFourDigits, amount: { units, nanos, currencyCode }, loyalty_level }, 'Transaction complete.');\n    transactionsCounter.add(1, { 'app.payment.currency': currencyCode });\n    span.end();\n  } catch (error) {\n    const errorTitle = error?.message || error?.name || 'Unknown Error';\n    Sentry.captureException(error);\n    logger.error({ error }, errorTitle);\n    transactionsCounter.add(1, { 'app.payment.failure': errorTitle })\n    span.end();\n    throw new Error(`Payment request failed: ${error}`);\n  }\n\n\n\n  return { transactionId };\n};",
         },
       ],
+      diffs: {
+        "asteroncall/opentelemetry-demo": [
+          {
+            sha: "1689a9ff6417512c1c6518d6a9cbe445db4ac714",
+            author: "tanvir362",
+            date: "2025-10-09T11:39:29Z",
+            diff: "@@ -1,3 +1,5 @@\n+const Sentry = require('@sentry/node');\n+\n // Copyright The OpenTelemetry Authors\n // SPDX-License-Identifier: Apache-2.0\n const { context, propagation, trace, metrics } = require('@opentelemetry/api');\n@@ -67,8 +69,10 @@ module.exports.charge = async request => {\n     transactionsCounter.add(1, { 'app.payment.currency': currencyCode });\n     span.end();\n   } catch (error) {\n-    logger.error({ error }, 'Payment charge failed');\n-    transactionsCounter.add(1, { 'app.payment.failure': 'Payment charge failed' })\n+    const errorTitle = error?.message || error?.name || 'Unknown Error';\n+    Sentry.captureException(error);\n+    logger.error({ error }, errorTitle);\n+    transactionsCounter.add(1, { 'app.payment.failure': errorTitle })\n     span.end();\n     throw new Error(`Payment request failed: ${error}`);\n   }",
+          },
+          {
+            sha: "8b69887c9b04e519e013c2baad87a70209d37396",
+            author: "moshfiqrony",
+            date: "2025-06-29T15:24:37Z",
+            diff: "@@ -67,6 +67,7 @@ module.exports.charge = async request => {\n     transactionsCounter.add(1, { 'app.payment.currency': currencyCode });\n     span.end();\n   } catch (error) {\n+    logger.error({ error }, 'Payment charge failed');\n     transactionsCounter.add(1, { 'app.payment.failure': 'Payment charge failed' })\n     span.end();\n     throw new Error(`Payment request failed: ${error}`);",
+          },
+          {
+            sha: "9237f86a5b8cafa96cbdd59824529536de515d2c",
+            author: "moshfiqrony",
+            date: "2025-03-25T05:37:19Z",
+            diff: "@@ -45,7 +45,7 @@ module.exports.charge = async request => {\n \n   try {\n     // Get stripe API URL and key from environment variables\n-    const STRIPE_URI = process.env.STRIPE_API_URL\n+    const STRIPE_URI = process.env.STRIPE_URL\n     const STRIPE_KEY = process.env.STRIPE_API_KEY\n \n     // Call stripe API to charge the credit card and do the payment transaction",
+          },
+        ],
+      },
     },
     result: {
       summary:

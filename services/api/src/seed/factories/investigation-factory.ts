@@ -19,6 +19,7 @@ export interface SeedInvestigationConfig {
   rootCause: string;
   recommendedFix: string;
   confidenceLevel: InvestigationConfidenceLevel;
+  codeChangesSHA: string;
 }
 
 /**
@@ -45,6 +46,7 @@ export function createSeedInvestigation(
     rootCause: config.rootCause,
     recommendedFix: config.recommendedFix,
     confidenceLevel: config.confidenceLevel,
+    codeChangesSHA: config.codeChangesSHA,
   };
 }
 
@@ -62,6 +64,7 @@ export const SEED_INVESTIGATION_PRESETS = {
     recommendedFix:
       "Set the STRIPE_URL environment variable in the payment service's deployment configuration.",
     confidenceLevel: InvestigationConfidenceLevel.High,
+    codeChangesSHA: "9237f86a5b8cafa96cbdd59824529536de515d2c",
     pdDetails: {
       incident_number: 1239,
       title:

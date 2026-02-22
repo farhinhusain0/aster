@@ -1,18 +1,31 @@
 import { z } from "zod";
 import { DynamicStructuredTool } from "langchain";
-import type { GithubIntegration } from "@aster/db";
+import {
+  IInvestigation,
+  investigationCheckModel,
+  investigationModel,
+  type GithubIntegration,
+} from "@aster/db";
 import { GithubClient } from "../../../clients";
+import { RunContext } from "../../types";
 
 const schema = z.object({
   since: z
     .string()
-    .describe("The start timestamp for the search window in ISO 8601 format (e.g., '2025-10-28T00:00:00Z'). This defines the earliest point in time to fetch patches from."),
+    .describe(
+      "The start timestamp for the search window in ISO 8601 format (e.g., '2025-10-28T00:00:00Z'). This defines the earliest point in time to fetch patches from.",
+    ),
   until: z
     .string()
-    .describe("The end timestamp for the search window in ISO 8601 format (e.g., '2025-10-29T00:00:00Z'). This defines the latest point in time to fetch patches from."),
+    .describe(
+      "The end timestamp for the search window in ISO 8601 format (e.g., '2025-10-29T00:00:00Z'). This defines the latest point in time to fetch patches from.",
+    ),
 });
 
-export default async function (integration: GithubIntegration) {
+export default async function (
+  integration: GithubIntegration,
+  context: RunContext,
+) {
   const { access_token } = integration.credentials;
   const { reposToSync } = integration.settings;
 
@@ -43,6 +56,54 @@ export default async function (integration: GithubIntegration) {
         }
 
         console.log("### diffs", JSON.stringify(diffs, null, 2));
+
+        try {
+          const investigation = (await investigationModel.getOneById(
+            context.investigationId as string,
+          )) as IInvestigation;
+
+          if (!investigation) {
+            throw new Error("Investigation not found");
+          }
+
+          const investigationCheck = await investigationCheckModel.getOne({
+            source: "github",
+            investigation: investigation,
+          });
+
+          if (investigationCheck) {
+            console.log(
+              "[TOOLS]->[GITHUB]->[fetch_code_change_history]: Updating existing investigation check",
+            );
+            investigationCheck.action = {
+              ...investigationCheck.action,
+              diffs,
+            };
+            investigationCheck.updatedAt = new Date();
+            await investigationCheck.save();
+          } else {
+            console.log(
+              "[TOOLS]->[GITHUB]->[fetch_code_change_history]: Creating new investigation check",
+            );
+            await investigationCheckModel.create({
+              source: "github",
+              investigation: investigation,
+              action: {
+                diffs,
+              },
+              result: {
+                summary: "",
+                explanation: "",
+              },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          }
+        } catch (error: any) {
+          console.error(
+            `[TOOLS]->[GITHUB]->[fetch_code_change_history]: Error storing code change history in investigation check: ${error.message}`,
+          );
+        }
 
         return diffs;
       } catch (error: any) {

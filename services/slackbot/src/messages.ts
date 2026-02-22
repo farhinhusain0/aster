@@ -108,8 +108,13 @@ export function attachMessages(app: App) {
         console.log("email", email);
         console.log("team", team);
 
-        const { rootCause, hypothesis, recommendedFix, confidenceLevel } =
-          JSON.parse(output);
+        const {
+          rootCause,
+          hypothesis,
+          recommendedFix,
+          confidenceLevel,
+          codeChangesSHA,
+        } = JSON.parse(output);
         finalResponse = hypothesis;
 
         const resp = await createInvestigation({
@@ -118,6 +123,7 @@ export function attachMessages(app: App) {
           rootCause,
           recommendedFix,
           confidenceLevel,
+          codeChangesSHA,
           pdIncidentId,
           email,
           team,

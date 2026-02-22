@@ -134,8 +134,20 @@ export async function handleTeamsSubscriptionNotification(
           console.log(response, vendorName, incidentId);
           console.log("\n=============Response=============\n");
 
+          const {
+            hypothesis,
+            rootCause,
+            confidenceLevel,
+            codeChangesSHA,
+            recommendedFix,
+          } = JSON.parse(response.output);
+
           await updateInvestigation({
-            hypothesis: response.output,
+            hypothesis,
+            rootCause,
+            confidenceLevel,
+            codeChangesSHA,
+            recommendedFix,
             investigationId: response.investigationId,
             incidentId,
             vendorName,
@@ -147,7 +159,7 @@ export async function handleTeamsSubscriptionNotification(
             attachments: [
               CardFactory.adaptiveCard(
                 getInvestigationCard({
-                  output: response.output,
+                  hypothesis: hypothesis,
                   investigationId: response.investigationId,
                 }),
               ),

@@ -405,12 +405,13 @@ INPUT: Technical Analysis Report containing incident summary, evidence, and root
 RESPONSE FORMAT:
 You MUST respond with a single valid JSON object and nothing else — no markdown fences, no extra text.
 
-The JSON object must have exactly four keys: "rootCause", "confidenceLevel", "hypothesis", and "recommendedFix".
+The JSON object must have exactly five keys: "rootCause", "confidenceLevel", "codeChangesSHA", "hypothesis", and "recommendedFix".
 
 Schema:
 {
   "rootCause": "<string>",
   "confidenceLevel": "<string>",
+  "codeChangesSHA": "<string>",
   "hypothesis": "<string>",
   "recommendedFix": "<string>"
 }
@@ -418,6 +419,7 @@ Schema:
 FIELD DEFINITIONS:
 - "rootCause": A single, short sentence that describes the root cause of the incident.
 - "confidenceLevel": A string between "low", "medium", "high" that represents the confidence level in the root cause.
+- "codeChangesSHA": The SHA of the diff of the code changes that might be causing the incident. return empty string if no code changes are found.
 - "hypothesis": A single, concise paragraph (≈50-120 words) that clearly includes:
    - Number of incidents and their frequency (from logs)
    - The observed issue or error pattern
