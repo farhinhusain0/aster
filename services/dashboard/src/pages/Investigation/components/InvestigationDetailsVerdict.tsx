@@ -23,7 +23,7 @@ const CONFIDENCE_LEVEL_MAP = {
   },
 };
 
-export function InvestigationDetailsHypothesis() {
+export function InvestigationDetailsVerdict() {
   const { id } = useParams();
   const { data: investigation } = useInvestigation(id || "");
 

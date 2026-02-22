@@ -2,7 +2,7 @@ import { Navigate, useParams } from "react-router-dom";
 import { useInvestigation } from "@/api/queries/investigations";
 import useDocumentTitle from "@/hooks/documentTitle";
 import {
-  InvestigationDetailsHypothesis,
+  InvestigationDetailsVerdict,
   InvestigationDetailsHeader,
 } from "./components";
 import {
@@ -44,7 +44,7 @@ function InvestigationDetails() {
       <InvestigationDetailsHeader />
       <div className="flex gap-5 flex-row mt-5">
         <div className="max-w-investigation-content w-full">
-          <InvestigationDetailsHypothesis />
+          <InvestigationDetailsVerdict />
         </div>
         <div className="max-w-investigation-right-sidebar w-full">
           Right sidebar components here

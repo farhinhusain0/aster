@@ -1,2 +1,2 @@
 export { InvestigationDetailsHeader } from "./InvestigationDetailsHeader";
-export { InvestigationDetailsHypothesis } from "./InvestigationDetailsHypothesis";
+export { InvestigationDetailsVerdict } from "./InvestigationDetailsVerdict";
