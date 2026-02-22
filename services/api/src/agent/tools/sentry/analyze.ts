@@ -5,8 +5,8 @@ import type { RunContext } from "../../types";
 import { DynamicStructuredTool } from "langchain";
 import { z } from "zod";
 import { calculateLCSLength } from "../../../utils/strings";
-import { checksSummaryPrompt, dataExplanationPrompt } from "../../prompts";
-import { chatModel } from "../../model";
+// import { checksSummaryPrompt, dataExplanationPrompt } from "../../prompts";
+// import { chatModel } from "../../model";
 
 const SIMILARITY_THRESHOLD = 0.5;
 
@@ -144,37 +144,37 @@ export default async function (
 
         // Use LLM to generate summary and explanation
         let summary = `Sentry issue '${issue.title}' was analyzed for root cause and user impact.`;
-        let explanation = `Recent events: ${JSON.stringify(events.slice(0, 3), null, 2)}`;
+        let explanation = `Fetched total of ${events.length} events for the issue.`;
 
-        try {
-          const queryExplanationPrompt = await dataExplanationPrompt.format({
-            toolDescription: TOOL_DESCRIPTION,
-            data: `Sentry Issue:\n${JSON.stringify(issue, null, 2)}\n\nRecent Events:\n${JSON.stringify(events.slice(0, 3), null, 2)}`,
-            query: action.request,
-            context: issue.title,
-          });
+        // try {
+        //   const queryExplanationPrompt = await dataExplanationPrompt.format({
+        //     toolDescription: TOOL_DESCRIPTION,
+        //     data: `Sentry Issue:\n${JSON.stringify(issue, null, 2)}\n\nRecent Events:\n${JSON.stringify(events.slice(0, 3), null, 2)}`,
+        //     query: action.request,
+        //     context: issue.title,
+        //   });
 
-          const explanationAiResponse = await chatModel.invoke(
-            queryExplanationPrompt,
-            { callbacks: [] },
-          );
+        //   const explanationAiResponse = await chatModel.invoke(
+        //     queryExplanationPrompt,
+        //     { callbacks: [] },
+        //   );
 
-          const checkSummaryPrompt = await checksSummaryPrompt.format({
-            toolDescription: TOOL_DESCRIPTION,
-            query: action.request,
-            result: explanationAiResponse.content.toString(),
-            context: issue.title,
-          });
+        //   const checkSummaryPrompt = await checksSummaryPrompt.format({
+        //     toolDescription: TOOL_DESCRIPTION,
+        //     query: action.request,
+        //     result: explanationAiResponse.content.toString(),
+        //     context: issue.title,
+        //   });
 
-          const summaryAiResponse = await chatModel.invoke(checkSummaryPrompt, {
-            callbacks: [],
-          });
+        //   const summaryAiResponse = await chatModel.invoke(checkSummaryPrompt, {
+        //     callbacks: [],
+        //   });
 
-          summary = summaryAiResponse.content.toString();
-          explanation = explanationAiResponse.content.toString();
-        } catch (err) {
-          console.error("LLM summary failed, falling back to default.", err);
-        }
+        //   summary = summaryAiResponse.content.toString();
+        //   explanation = explanationAiResponse.content.toString();
+        // } catch (err) {
+        //   console.error("LLM summary failed, falling back to default.", err);
+        // }
 
         const result = { summary, explanation };
 

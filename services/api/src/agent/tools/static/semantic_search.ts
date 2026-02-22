@@ -9,7 +9,7 @@ import {
   VendorName,
 } from "@aster/db";
 import { Document, nodesToText } from "../../rag";
-import { checksSummaryPrompt, dataExplanationPrompt } from "../../prompts";
+// import { checksSummaryPrompt, dataExplanationPrompt } from "../../prompts";
 
 export default async function (context: RunContext) {
   const index = await indexModel.getOne({
@@ -44,7 +44,7 @@ export default async function (context: RunContext) {
         source: string;
       }) => {
         try {
-          const chatModel = context.chatModel;
+          // const chatModel = context.chatModel;
           console.log("####### inside semantic search tool ########");
           console.log("Query:", query);
           console.log("Source:", source);
@@ -56,7 +56,9 @@ export default async function (context: RunContext) {
           const documents = await vectorStore.query({
             query,
             topK: 10,
-            ...(index.dataSources.includes(source as VendorName) && { metadata: { source } }),
+            ...(index.dataSources.includes(source as VendorName) && {
+              metadata: { source },
+            }),
           });
           documents.sort((a, b) => b.score - a.score);
 
@@ -65,6 +67,8 @@ export default async function (context: RunContext) {
             "####### search results count ########",
             text?.length || 0,
           );
+          const summary = `Seamntic search into knowledge graph for the query: ${query}`;
+          const explanation = `Retrieved ${documents.length} documents from the knowledge graph.`;
 
           try {
             // Check and Create an investigation check
@@ -76,37 +80,37 @@ export default async function (context: RunContext) {
                 }
               });
 
-              const githubDocumentsText = nodesToText(githubDocuments);
+              // const githubDocumentsText = nodesToText(githubDocuments);
 
-              const queryExplanationPrompt = await dataExplanationPrompt.format(
-                {
-                  toolDescription:
-                    "Using semantic search to find relevant files from the codebase for the incident",
-                  data: githubDocumentsText,
-                  query: query,
-                  context: incidentLabel,
-                },
-              );
-              const explanationAiResponse = await chatModel.invoke(
-                queryExplanationPrompt,
-                {
-                  callbacks: [],
-                },
-              );
+              // const queryExplanationPrompt = await dataExplanationPrompt.format(
+              //   {
+              //     toolDescription:
+              //       "Using semantic search to find relevant files from the codebase for the incident",
+              //     data: githubDocumentsText,
+              //     query: query,
+              //     context: incidentLabel,
+              //   },
+              // );
+              // const explanationAiResponse = await chatModel.invoke(
+              //   queryExplanationPrompt,
+              //   {
+              //     callbacks: [],
+              //   },
+              // );
 
-              const checkSummaryPrompt = await checksSummaryPrompt.format({
-                toolDescription:
-                  "Using semantic search to find relevant files from the codebase for the incident",
-                query,
-                result: explanationAiResponse.content.toString(),
-                context: incidentLabel,
-              });
-              const summaryAiResponse = await chatModel.invoke(
-                checkSummaryPrompt,
-                {
-                  callbacks: [],
-                },
-              );
+              // const checkSummaryPrompt = await checksSummaryPrompt.format({
+              //   toolDescription:
+              //     "Using semantic search to find relevant files from the codebase for the incident",
+              //   query,
+              //   result: explanationAiResponse.content.toString(),
+              //   context: incidentLabel,
+              // });
+              // const summaryAiResponse = await chatModel.invoke(
+              //   checkSummaryPrompt,
+              //   {
+              //     callbacks: [],
+              //   },
+              // );
 
               const filesData = githubDocuments.map((doc) => ({
                 filename: doc.metadata.file_name,
@@ -126,8 +130,8 @@ export default async function (context: RunContext) {
 
               if (investigationCheck) {
                 investigationCheck.result = {
-                  summary: summaryAiResponse.content.toString(),
-                  explanation: explanationAiResponse.content.toString(),
+                  summary,
+                  explanation,
                 };
                 investigationCheck.updatedAt = new Date();
                 await investigationCheck.save();
@@ -140,8 +144,8 @@ export default async function (context: RunContext) {
                     files: filesData,
                   },
                   result: {
-                    summary: summaryAiResponse.content.toString(),
-                    explanation: explanationAiResponse.content.toString(),
+                    summary,
+                    explanation,
                   },
                   createdAt: new Date(),
                   updatedAt: new Date(),
