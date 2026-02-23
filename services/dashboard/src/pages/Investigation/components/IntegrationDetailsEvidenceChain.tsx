@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/common/Accordion";
+import CodeBlock from "@/components/common/CodeBlock";
 import Typography from "@/components/common/Typography";
 import { icons } from "@/components/Connection/icons";
 import { ConnectionName } from "@/types/Connections";
@@ -24,7 +25,7 @@ export function IntegrationDetailsEvidenceChain() {
   const { id } = useParams();
   const { data: investigation } = useInvestigation(id || "");
 
-  const { checks } = investigation;
+  const { checks, codeChangesSHA } = investigation;
 
   return (
     <div>
@@ -37,20 +38,30 @@ export function IntegrationDetailsEvidenceChain() {
       </div>
       <div className="flex flex-col gap-5 w-full mt-5">
         {checks.map((check: IInvestigationCheck) => (
-          <EvidenceChainItem key={check._id} check={check} />
+          <EvidenceChainItem
+            key={check._id}
+            check={check}
+            codeChangeSHA={codeChangesSHA}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function EvidenceChainItem({ check }: { check: IInvestigationCheck }) {
+function EvidenceChainItem({
+  check,
+  codeChangeSHA,
+}: {
+  check: IInvestigationCheck;
+  codeChangeSHA: string;
+}) {
   if (check.source === InvestigationCheckSource.Sentry) {
     return <SentryEvidenceChain check={check} />;
   }
 
   if (check.source === InvestigationCheckSource.Github) {
-    return <GithubEvidenceChain check={check} />;
+    return <GithubEvidenceChain check={check} codeChangeSHA={codeChangeSHA} />;
   }
 
   return null;
@@ -106,7 +117,7 @@ function SentryEvidenceChain({ check }: { check: IInvestigationCheck }) {
           issue={issue as ISentryIssue}
           stats={stats as ISentryStats}
         />
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-4">
           <Button
             color="link-gray"
             size="sm"
@@ -126,7 +137,7 @@ function SentryEvidenceChain({ check }: { check: IInvestigationCheck }) {
         SourceLogo={SourceLogo}
       >
         <SentryStackTrace latestEvent={latest_event} title={issue_title} />
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-4">
           <Button
             color="link-gray"
             size="sm"
@@ -134,7 +145,6 @@ function SentryEvidenceChain({ check }: { check: IInvestigationCheck }) {
             href={issue?.permalink}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4"
           >
             View in Sentry
           </Button>
@@ -144,9 +154,26 @@ function SentryEvidenceChain({ check }: { check: IInvestigationCheck }) {
   );
 }
 
-function GithubEvidenceChain({ check }: { check: IInvestigationCheck }) {
+function GithubEvidenceChain({
+  check,
+  codeChangeSHA,
+}: {
+  check: IInvestigationCheck;
+  codeChangeSHA: string;
+}) {
   const sourceName = "GitHub";
   const SourceLogo = icons[ConnectionName.Github];
+  const { action } = check;
+
+  if (!action?.diffs) {
+    return null;
+  }
+
+  const matchedDiff = Object.entries(action.diffs)
+    .flatMap(([diffKey, diffs]) =>
+      diffs.map((item) => ({ ...item, repoName: diffKey })),
+    )
+    .find((item) => item.sha === codeChangeSHA);
 
   return (
     <EvidenceChainItemCard
@@ -154,7 +181,20 @@ function GithubEvidenceChain({ check }: { check: IInvestigationCheck }) {
       sourceName={sourceName}
       SourceLogo={SourceLogo}
     >
-      sdf
+      <CodeBlock language="diff">{matchedDiff?.diff as string}</CodeBlock>
+
+      <div className="flex justify-end mt-4">
+        <Button
+          color="link-gray"
+          size="sm"
+          iconTrailing={<LinkExternal01 size={20} />}
+          href={`https://github.com/${matchedDiff?.repoName}/commit/${codeChangeSHA}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View in GitHub
+        </Button>
+      </div>
     </EvidenceChainItemCard>
   );
 }

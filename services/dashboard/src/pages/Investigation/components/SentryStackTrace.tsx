@@ -4,11 +4,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/common/Accordion";
+import CodeBlock from "@/components/common/CodeBlock";
 import Typography from "@/components/common/Typography";
 import { SentryLatestEvent } from "@/types/Investigtion";
 import { extractInAppFrames } from "@/utils/investigations";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { githubGist as ideStyle } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 export function SentryStackTrace({
   latestEvent,
@@ -38,26 +37,12 @@ export function SentryStackTrace({
           <AccordionItem key={frame.filename} value={frame.filename}>
             <AccordionTrigger>{frame.filename}</AccordionTrigger>
             <AccordionContent>
-              <SyntaxHighlighter
-                language="javascript"
-                style={ideStyle}
-                showLineNumbers
+              <CodeBlock
                 startingLineNumber={frame.startLine}
-                wrapLines
-                lineProps={(lineNumber: number) => {
-                  const style: Record<string, string> = {
-                    display: "block",
-                    fontSize: "12px",
-                    lineHeight: "18px",
-                  };
-                  if (frame.errorLine === lineNumber) {
-                    style.backgroundColor = "var(--color-gray-100)";
-                  }
-                  return { style };
-                }}
+                highlightLine={frame.errorLine}
               >
                 {frame.code}
-              </SyntaxHighlighter>
+              </CodeBlock>
             </AccordionContent>
           </AccordionItem>
         ))}

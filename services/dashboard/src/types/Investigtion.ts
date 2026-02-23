@@ -21,6 +21,13 @@ export interface ICheckFile {
   text?: string;
 }
 
+export interface ICodeChangeDiff {
+  sha: string;
+  author: string;
+  date: string;
+  diff: string;
+}
+
 export interface ISentryIssue {
   permalink: string;
   count: number;
@@ -48,7 +55,7 @@ export interface IInvestigationCheck {
     query?: string;
     url?: string;
     files?: Array<ICheckFile>;
-    diffs?: object;
+    diffs?: Record<string, ICodeChangeDiff[]>;
     issue?: ISentryIssue;
     issue_title?: string;
     stats?: ISentryStats;
@@ -67,6 +74,10 @@ export interface IInvestigation {
   updatedAt: Date;
   jsmDetails?: JSMDetails | null;
   checks: Array<IInvestigationCheck>;
+  rootCause: string;
+  recommendedFix: string;
+  confidenceLevel: InvestigationConfidenceLevel;
+  codeChangesSHA: string;
 }
 
 export enum InvestigationConfidenceLevel {
