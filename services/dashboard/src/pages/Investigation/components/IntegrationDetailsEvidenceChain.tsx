@@ -11,6 +11,7 @@ import Typography from "@/components/common/Typography";
 import { icons } from "@/components/Connection/icons";
 import { ConnectionName } from "@/types/Connections";
 import {
+  IInvestigation,
   IInvestigationCheck,
   InvestigationCheckSource,
   ISentryIssue,
@@ -25,7 +26,7 @@ export function IntegrationDetailsEvidenceChain() {
   const { id } = useParams();
   const { data: investigation } = useInvestigation(id || "");
 
-  const { checks, codeChangesSHA } = investigation;
+  const evidenceCards = getEvidenceCards(investigation);
 
   return (
     <div>
@@ -36,35 +37,82 @@ export function IntegrationDetailsEvidenceChain() {
           Evidence chain
         </Typography>
       </div>
-      <div className="flex flex-col gap-5 w-full mt-5">
-        {checks.map((check: IInvestigationCheck) => (
-          <EvidenceChainItem
-            key={check._id}
-            check={check}
-            codeChangeSHA={codeChangesSHA}
-          />
+      <div className="flex flex-col w-full mt-5">
+        {evidenceCards.map((card, index) => (
+          <div key={card.key} className="flex flex-row gap-3">
+            {/*
+              Timeline indicator: numbered circle with connecting lines.
+              The circle is vertically centered with the accordion header
+              (1px border + 10px trigger padding + 10px half-content = 21px,
+              minus 12px circle center = ~8px offset). For the first item we
+              use a plain 8px spacer; for subsequent items that 8px is split
+              into a 6px line segment + 2px gap so the connector runs almost
+              up to the circle without touching it.
+            */}
+            <div className="flex flex-col items-center">
+              {index > 0 ? (
+                <>
+                  <div className="w-0.5 h-1.5 bg-border-secondary" />
+                  <div className="h-0.5" />
+                </>
+              ) : (
+                <div className="h-2" />
+              )}
+              <div className="w-6 h-6 rounded-full border border-secondary bg-primary flex items-center justify-center shrink-0">
+                <span className="text-xs font-medium text-quaternary">
+                  {index + 1}
+                </span>
+              </div>
+              {index < evidenceCards.length - 1 && (
+                <>
+                  <div className="h-0.5" />
+                  <div className="w-0.5 flex-1 bg-border-secondary" />
+                </>
+              )}
+            </div>
+            <div className="flex-1 pb-5 min-w-0">
+              <EvidenceChainItemCard
+                sourceName={card.sourceName}
+                SourceLogo={card.SourceLogo}
+                name={card.name}
+              >
+                {card.content}
+              </EvidenceChainItemCard>
+            </div>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-function EvidenceChainItem({
-  check,
-  codeChangeSHA,
-}: {
-  check: IInvestigationCheck;
-  codeChangeSHA: string;
-}) {
-  if (check.source === InvestigationCheckSource.Sentry) {
-    return <SentryEvidenceChain check={check} />;
+interface EvidenceCardData {
+  key: string;
+  sourceName: string;
+  SourceLogo: React.ComponentType<{
+    className: string;
+    style?: React.CSSProperties;
+  }>;
+  name: string;
+  content: React.ReactNode;
+}
+
+function getEvidenceCards(investigation: IInvestigation): EvidenceCardData[] {
+  const { checks, codeChangesSHA } = investigation;
+  const cards: EvidenceCardData[] = [];
+
+  for (const check of checks) {
+    if (check.source === InvestigationCheckSource.Sentry) {
+      cards.push(...getSentryCards(check));
+    }
+
+    if (check.source === InvestigationCheckSource.Github) {
+      const card = getGithubCard(check, codeChangesSHA);
+      if (card) cards.push(card);
+    }
   }
 
-  if (check.source === InvestigationCheckSource.Github) {
-    return <GithubEvidenceChain check={check} codeChangeSHA={codeChangeSHA} />;
-  }
-
-  return null;
+  return cards;
 }
 
 function EvidenceChainItemCard({
@@ -99,68 +147,62 @@ function EvidenceChainItemCard({
   );
 }
 
-function SentryEvidenceChain({ check }: { check: IInvestigationCheck }) {
+function getSentryCards(check: IInvestigationCheck): EvidenceCardData[] {
   const sourceName = "Sentry";
   const SourceLogo = icons[ConnectionName.Sentry];
-
   const { action } = check;
   const { issue, stats, issue_title, latest_event } = action ?? {};
 
-  return (
-    <>
-      <EvidenceChainItemCard
-        name="Error frequency"
-        sourceName={sourceName}
-        SourceLogo={SourceLogo}
+  const viewInSentry = (
+    <div className="flex justify-end mt-4">
+      <Button
+        color="link-gray"
+        size="sm"
+        iconTrailing={<LinkExternal01 size={20} />}
+        href={issue?.permalink}
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        <SentryErrorFrequency
-          issue={issue as ISentryIssue}
-          stats={stats as ISentryStats}
-        />
-        <div className="flex justify-end mt-4">
-          <Button
-            color="link-gray"
-            size="sm"
-            iconTrailing={<LinkExternal01 size={20} />}
-            href={issue?.permalink}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View in Sentry
-          </Button>
-        </div>
-      </EvidenceChainItemCard>
-
-      <EvidenceChainItemCard
-        name="Stack trace"
-        sourceName={sourceName}
-        SourceLogo={SourceLogo}
-      >
-        <SentryStackTrace latestEvent={latest_event} title={issue_title} />
-        <div className="flex justify-end mt-4">
-          <Button
-            color="link-gray"
-            size="sm"
-            iconTrailing={<LinkExternal01 size={20} />}
-            href={issue?.permalink}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View in Sentry
-          </Button>
-        </div>
-      </EvidenceChainItemCard>
-    </>
+        View in Sentry
+      </Button>
+    </div>
   );
+
+  return [
+    {
+      key: `${check._id}-error-frequency`,
+      sourceName,
+      SourceLogo,
+      name: "Error frequency",
+      content: (
+        <>
+          <SentryErrorFrequency
+            issue={issue as ISentryIssue}
+            stats={stats as ISentryStats}
+          />
+          {viewInSentry}
+        </>
+      ),
+    },
+    {
+      key: `${check._id}-stack-trace`,
+      sourceName,
+      SourceLogo,
+      name: "Stack trace",
+      content: (
+        <>
+          <SentryStackTrace latestEvent={latest_event} title={issue_title} />
+          {viewInSentry}
+        </>
+      ),
+    },
+  ];
 }
 
-function GithubEvidenceChain({
-  check,
-  codeChangeSHA,
-}: {
-  check: IInvestigationCheck;
-  codeChangeSHA: string;
-}) {
+function getGithubCard(
+  check: IInvestigationCheck,
+  codeChangeSHA: string,
+): EvidenceCardData | null {
   const sourceName = "GitHub";
   const SourceLogo = icons[ConnectionName.Github];
   const { action } = check;
@@ -175,26 +217,27 @@ function GithubEvidenceChain({
     )
     .find((item) => item.sha === codeChangeSHA);
 
-  return (
-    <EvidenceChainItemCard
-      name="Correlated code change"
-      sourceName={sourceName}
-      SourceLogo={SourceLogo}
-    >
-      <CodeBlock language="diff">{matchedDiff?.diff as string}</CodeBlock>
-
-      <div className="flex justify-end mt-4">
-        <Button
-          color="link-gray"
-          size="sm"
-          iconTrailing={<LinkExternal01 size={20} />}
-          href={`https://github.com/${matchedDiff?.repoName}/commit/${codeChangeSHA}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          View in GitHub
-        </Button>
-      </div>
-    </EvidenceChainItemCard>
-  );
+  return {
+    key: `${check._id}-code-change`,
+    sourceName,
+    SourceLogo,
+    name: "Correlated code change",
+    content: (
+      <>
+        <CodeBlock language="diff">{matchedDiff?.diff as string}</CodeBlock>
+        <div className="flex justify-end mt-4">
+          <Button
+            color="link-gray"
+            size="sm"
+            iconTrailing={<LinkExternal01 size={20} />}
+            href={`https://github.com/${matchedDiff?.repoName}/commit/${codeChangeSHA}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View in GitHub
+          </Button>
+        </div>
+      </>
+    ),
+  };
 }
