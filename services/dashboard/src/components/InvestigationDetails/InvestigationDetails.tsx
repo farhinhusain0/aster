@@ -1,45 +1,40 @@
-import { Link, useParams } from "react-router-dom";
 import { useInvestigation } from "@/api/queries/investigations";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { sanitizeMarkdownText } from "@/utils/strings";
-import GrafanaLogo from "@/assets/logo-grafana.png";
 import DatadogLogo from "@/assets/logo-datadog.png";
+import GrafanaLogo from "@/assets/logo-grafana.png";
+import JiraLogo from "@/assets/logo-jira-service-management.png";
+import PagerDutyLogo from "@/assets/logo-pagerduty.png";
 import SentryLogo from "@/assets/logo-sentry.svg";
-import { FaGithub } from "react-icons/fa";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { vs } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { format, formatDistanceToNowStrict } from "date-fns";
+import { Avatar } from "@/components/base/avatar/avatar";
+import { BadgeColors } from "@/components/base/badges/badge-types";
 import { Badge, BadgeWithIcon } from "@/components/base/badges/badges";
 import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
-import { BadgeColors } from "@/components/base/badges/badge-types";
-import Divider from "@/components/common/Divider";
-import Typography from "@/components/common/Typography";
-import { cx } from "@/utils/cx";
-import {
-  ArrowRight,
-  ChevronDown,
-  LinkExternal01,
-  AlertCircle,
-} from "@untitledui/icons";
-import { Avatar } from "@/components/base/avatar/avatar";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/common/Accordion";
-import {
-  getStatusText,
-  StatusColorMap,
-  StatusBadgeComponentMap,
-  StatusIconMap,
-  getPriorityText,
-  PriorityColorMap,
-} from "@/utils/investigations";
-import PagerDutyLogo from "@/assets/logo-pagerduty.png";
-import JiraLogo from "@/assets/logo-jira-service-management.png";
+import Divider from "@/components/common/Divider";
+import Typography from "@/components/common/Typography";
 import { ICheckFile, IInvestigationCheck } from "@/types/Investigtion";
+import { cx } from "@/utils/cx";
+import {
+  getPriorityText,
+  getStatusText,
+  PriorityColorMap,
+  StatusBadgeComponentMap,
+  StatusColorMap,
+  StatusIconMap,
+} from "@/utils/investigations";
+import { sanitizeMarkdownText } from "@/utils/strings";
+import { AlertCircle, ArrowRight, LinkExternal01 } from "@untitledui/icons";
+import { format, formatDistanceToNowStrict } from "date-fns";
+import { FaGithub } from "react-icons/fa";
+import Markdown from "react-markdown";
+import { Link, useParams } from "react-router-dom";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { vs } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import remarkGfm from "remark-gfm";
 
 function StatusBadge({ statusText }: { statusText: string }) {
   const StatusBadgeComponent =
@@ -405,34 +400,27 @@ function ExplanationBlock({ action, result, source }: ExplanationBlockProps) {
         <div className="flex flex-col gap-3 ">
           <Typography variant="md/semibold">Documents</Typography>
           <Accordion type="single" collapsible>
-              {action?.files?.map((f: ICheckFile, i: number) => (
-                <AccordionItem key={f.filename} value={f.filename + i}>
-                  <AccordionTrigger className="p-3 pr-5 border-b border-gray-200">
-                    <a className="flex gap-1" href={f.url} target="_blank">
-                      <Typography
-                        variant="md/semibold"
-                        className="text-primary"
-                      >
-                        {f.filename}
-                      </Typography>
-                      <LinkExternal01 size={14} className="mt-0.5" />
-                    </a>
-                    <ChevronDown
-                      className="transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] group-data-[state=open]:rotate-180 text-gray-400"
-                      size={24}
-                    />
-                  </AccordionTrigger>
-                  <AccordionContent className="p-3 border-b border-gray-200">
-                    <SyntaxHighlighter
-                      customStyle={{ fontSize: "0.875rem", lineHeight: 1.5 }}
-                      style={vs}
-                    >
-                      {f.text as string}
-                    </SyntaxHighlighter>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+            {action?.files?.map((f: ICheckFile, i: number) => (
+              <AccordionItem key={f.filename} value={f.filename + i}>
+                <AccordionTrigger className="p-3 pr-5 border-b border-gray-200">
+                  <a className="flex gap-1" href={f.url} target="_blank">
+                    <Typography variant="md/semibold" className="text-primary">
+                      {f.filename}
+                    </Typography>
+                    <LinkExternal01 size={14} className="mt-0.5" />
+                  </a>
+                </AccordionTrigger>
+                <AccordionContent className="p-3 border-b border-gray-200">
+                  <SyntaxHighlighter
+                    customStyle={{ fontSize: "0.875rem", lineHeight: 1.5 }}
+                    style={vs}
+                  >
+                    {f.text as string}
+                  </SyntaxHighlighter>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       )}
     </div>
