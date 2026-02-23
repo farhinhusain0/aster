@@ -24,7 +24,7 @@ export function SentryStackTrace({
   if (frames.length === 0) return null;
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <Typography variant="md/normal" className="text-black">
         {title}
       </Typography>
@@ -47,8 +47,8 @@ export function SentryStackTrace({
                 lineProps={(lineNumber: number) => {
                   const style: Record<string, string> = {
                     display: "block",
-                    fontSize: '12px',
-                    lineHeight: '18px',
+                    fontSize: "12px",
+                    lineHeight: "18px",
                   };
                   if (frame.errorLine === lineNumber) {
                     style.backgroundColor = "var(--color-gray-100)";
@@ -62,6 +62,6 @@ export function SentryStackTrace({
           </AccordionItem>
         ))}
       </Accordion>
-    </>
+    </div>
   );
 }

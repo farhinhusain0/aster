@@ -1,5 +1,11 @@
 import { useInvestigation } from "@/api/queries/investigations";
-import ContentContainerCard from "@/components/common/ContentContainerCard";
+import { Button } from "@/components/base/buttons/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/common/Accordion";
 import Typography from "@/components/common/Typography";
 import { icons } from "@/components/Connection/icons";
 import { ConnectionName } from "@/types/Connections";
@@ -13,7 +19,6 @@ import { ClockFastForward, LinkExternal01 } from "@untitledui/icons";
 import { useParams } from "react-router-dom";
 import { SentryErrorFrequency } from "./SentryErrorFrequency";
 import { SentryStackTrace } from "./SentryStackTrace";
-import { Button } from "@/components/base/buttons/button";
 
 export function IntegrationDetailsEvidenceChain() {
   const { id } = useParams();
@@ -66,18 +71,20 @@ function EvidenceChainItemCard({
   children: React.ReactNode;
 }) {
   return (
-    <ContentContainerCard>
-      <ContentContainerCard.Header>
-        <div className="flex flex-row gap-1.5 items-center">
-          <SourceLogo className="w-4 h-4 text-primary" />
-          <span className="text-primary">
-            <span className="text-quaternary">{sourceName}&nbsp;/&nbsp;</span>
-            {name}
-          </span>
-        </div>
-      </ContentContainerCard.Header>
-      <ContentContainerCard.Content>{children}</ContentContainerCard.Content>
-    </ContentContainerCard>
+    <Accordion type="single" collapsible>
+      <AccordionItem value={`${sourceName}-${name}`}>
+        <AccordionTrigger>
+          <div className="flex flex-row gap-1.5 items-center text-xs font-semibold">
+            <SourceLogo className="w-5 h-5 text-primary" />
+            <span className="text-primary">
+              <span className="text-quaternary">{sourceName}&nbsp;/&nbsp;</span>
+              {name}
+            </span>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="px-5 py-4">{children}</AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }
 
@@ -127,6 +134,7 @@ function SentryEvidenceChain({ check }: { check: IInvestigationCheck }) {
             href={issue?.permalink}
             target="_blank"
             rel="noopener noreferrer"
+            className="mt-4"
           >
             View in Sentry
           </Button>

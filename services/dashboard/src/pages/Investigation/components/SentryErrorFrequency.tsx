@@ -49,7 +49,7 @@ export function SentryErrorFrequency({
   })();
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <Typography variant="md/normal" className="text-black">
         {count} occurrences in the last 24 hours
       </Typography>
@@ -133,6 +133,6 @@ export function SentryErrorFrequency({
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-    </>
+    </div>
   );
 }
