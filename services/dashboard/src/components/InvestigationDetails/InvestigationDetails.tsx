@@ -28,7 +28,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@radix-ui/react-accordion";
+} from "@/components/common/Accordion";
 import {
   getStatusText,
   StatusColorMap,
@@ -404,11 +404,10 @@ function ExplanationBlock({ action, result, source }: ExplanationBlockProps) {
       {source === "github" && (
         <div className="flex flex-col gap-3 ">
           <Typography variant="md/semibold">Documents</Typography>
-          <div className="border border-gray-200 rounded-lg">
-            <Accordion type="single" collapsible>
+          <Accordion type="single" collapsible>
               {action?.files?.map((f: ICheckFile, i: number) => (
                 <AccordionItem key={f.filename} value={f.filename + i}>
-                  <AccordionTrigger className="group flex items-center justify-between w-full p-3 pr-5 cursor-pointer border-b border-gray-200">
+                  <AccordionTrigger className="p-3 pr-5 border-b border-gray-200">
                     <a className="flex gap-1" href={f.url} target="_blank">
                       <Typography
                         variant="md/semibold"
@@ -434,7 +433,6 @@ function ExplanationBlock({ action, result, source }: ExplanationBlockProps) {
                 </AccordionItem>
               ))}
             </Accordion>
-          </div>
         </div>
       )}
     </div>
