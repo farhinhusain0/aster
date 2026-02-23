@@ -22,6 +22,7 @@ export interface ICheckFile {
 }
 
 export interface ISentryIssue {
+  permalink: string;
   count: number;
   userCount: number;
 }

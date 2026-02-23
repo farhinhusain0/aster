@@ -9,10 +9,11 @@ import {
   ISentryIssue,
   ISentryStats,
 } from "@/types/Investigtion";
-import { ClockFastForward } from "@untitledui/icons";
+import { ClockFastForward, LinkExternal01 } from "@untitledui/icons";
 import { useParams } from "react-router-dom";
 import { SentryErrorFrequency } from "./SentryErrorFrequency";
 import { SentryStackTrace } from "./SentryStackTrace";
+import { Button } from "@/components/base/buttons/button";
 
 export function IntegrationDetailsEvidenceChain() {
   const { id } = useParams();
@@ -98,6 +99,18 @@ function SentryEvidenceChain({ check }: { check: IInvestigationCheck }) {
           issue={issue as ISentryIssue}
           stats={stats as ISentryStats}
         />
+        <div className="flex justify-end">
+          <Button
+            color="link-gray"
+            size="sm"
+            iconTrailing={<LinkExternal01 size={20} />}
+            href={issue?.permalink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View in Sentry
+          </Button>
+        </div>
       </EvidenceChainItemCard>
 
       <EvidenceChainItemCard
@@ -105,11 +118,19 @@ function SentryEvidenceChain({ check }: { check: IInvestigationCheck }) {
         sourceName={sourceName}
         SourceLogo={SourceLogo}
       >
-        <SentryStackTrace
-          latestEvent={latest_event}
-          viewUrl={action?.url}
-          title={issue_title}
-        />
+        <SentryStackTrace latestEvent={latest_event} title={issue_title} />
+        <div className="flex justify-end">
+          <Button
+            color="link-gray"
+            size="sm"
+            iconTrailing={<LinkExternal01 size={20} />}
+            href={issue?.permalink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View in Sentry
+          </Button>
+        </div>
       </EvidenceChainItemCard>
     </>
   );
