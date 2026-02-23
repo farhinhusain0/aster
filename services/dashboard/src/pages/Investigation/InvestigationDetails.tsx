@@ -1,14 +1,15 @@
-import { Navigate, useParams } from "react-router-dom";
 import { useInvestigation } from "@/api/queries/investigations";
-import useDocumentTitle from "@/hooks/documentTitle";
-import {
-  InvestigationDetailsVerdict,
-  InvestigationDetailsHeader,
-} from "./components";
 import {
   InvestigationDetailsLeftPanel,
   InvestigationDetailsRightPanel,
 } from "@/components/InvestigationDetails/InvestigationDetails";
+import useDocumentTitle from "@/hooks/documentTitle";
+import { Navigate, useParams } from "react-router-dom";
+import {
+  IntegrationDetailsEvidenceChain,
+  InvestigationDetailsHeader,
+  InvestigationDetailsVerdict,
+} from "./components";
 
 function InvestigationDetails() {
   useDocumentTitle("Investigation details | Aster");
@@ -43,12 +44,14 @@ function InvestigationDetails() {
     <div className="w-full max-w-[952px] mx-auto">
       <InvestigationDetailsHeader />
       <div className="flex gap-5 flex-row mt-5">
-        <div className="max-w-investigation-content w-full">
+        {/* Added a large mb so that the last card have a bottom space to breath */}
+        <div className="max-w-investigation-content w-full flex flex-col gap-5 mx-auto mb-50">
           <InvestigationDetailsVerdict />
+          <IntegrationDetailsEvidenceChain />
         </div>
-        <div className="max-w-investigation-right-sidebar w-full">
+        {/* <div className="max-w-investigation-right-sidebar w-full">
           Right sidebar components here
-        </div>
+        </div> */}
       </div>
     </div>
   );

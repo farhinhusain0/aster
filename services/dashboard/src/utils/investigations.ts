@@ -1,6 +1,11 @@
 import { BadgeColors } from "@/components/base/badges/badge-types";
 import { BadgeWithDot, BadgeWithIcon } from "@/components/base/badges/badges";
-import { JSMDetails, PDDetails } from "@/types/Investigtion";
+import {
+  JSMDetails,
+  ParsedFrame,
+  PDDetails,
+  SentryLatestEvent,
+} from "@/types/Investigtion";
 import { CheckCircle, Eye } from "@untitledui/icons";
 
 export const JSMStatusTextMap = {
@@ -45,10 +50,10 @@ export const PriorityColorMap: Record<string, BadgeColors> = {
 };
 
 export const getJSMStatusText = (details: JSMDetails) => {
-  if(details.acknowledged && details.status === 'open') {
+  if (details.acknowledged && details.status === "open") {
     return JSMStatusTextMap.acknowledged;
   }
-  
+
   if (details.status && details.status in JSMStatusTextMap) {
     return JSMStatusTextMap[details.status as keyof typeof JSMStatusTextMap];
   }
@@ -91,3 +96,38 @@ export const getPriorityText = (
   }
   return "No priority";
 };
+
+export function extractInAppFrames(
+  latestEvent: SentryLatestEvent,
+): ParsedFrame[] {
+  const exceptionEntry = latestEvent.entries?.find(
+    (e) => e.type === "exception",
+  );
+  if (!exceptionEntry) return [];
+
+  const frameMap = new Map<string, ParsedFrame>();
+  const exceptions = exceptionEntry.data.values || [];
+
+  for (const exception of exceptions) {
+    if (!exception.stacktrace?.frames) continue;
+    for (const frame of exception.stacktrace.frames) {
+      if (!frame.inApp || !frame.context?.length) continue;
+
+      const existing = frameMap.get(frame.filename);
+      const existingLineCount = existing?.code.split("\n").length ?? 0;
+
+      if (!existing || frame.context.length > existingLineCount) {
+        const sorted = [...frame.context].sort((a, b) => a[0] - b[0]);
+        frameMap.set(frame.filename, {
+          filename: frame.filename,
+          startLine: sorted[0][0],
+          code: sorted.map(([, line]) => line).join("\n"),
+          errorLine: frame.lineNo,
+        });
+      }
+    }
+  }
+
+  // We want it in reversed because the last file is the main file in the trace
+  return Array.from(frameMap.values()).reverse();
+}

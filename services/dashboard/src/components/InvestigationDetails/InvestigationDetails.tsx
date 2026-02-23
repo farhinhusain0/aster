@@ -39,31 +39,7 @@ import {
 } from "@/utils/investigations";
 import PagerDutyLogo from "@/assets/logo-pagerduty.png";
 import JiraLogo from "@/assets/logo-jira-service-management.png";
-
-interface File {
-  filename: string;
-  url: string;
-  text?: string;
-}
-
-interface Check {
-  _id: string;
-  source: string;
-  result: {
-    summary: string;
-    explanation?: string;
-  };
-  action?: {
-    query?: string;
-    url?: string;
-    files?: Array<File>;
-    diffs?: object;
-    issue?: object;
-    issue_title?: string;
-    stats?: object;
-    latest_event?: object;
-  };
-}
+import { ICheckFile, IInvestigationCheck } from "@/types/Investigtion";
 
 function StatusBadge({ statusText }: { statusText: string }) {
   const StatusBadgeComponent =
@@ -278,7 +254,7 @@ function InvestigationDetailsLeftPanel() {
           </Typography>
           {checks.length > 0 && (
             <div className="flex gap-3 flex-col justify-start items-start w-full">
-              {checks.map((check: Check) => (
+              {checks.map((check: IInvestigationCheck) => (
                 <Link
                   className="w-full"
                   key={check._id}
@@ -403,8 +379,8 @@ function InvestigationDetailsRightPanel() {
 }
 
 interface ExplanationBlockProps {
-  action: Check["action"];
-  result: Check["result"];
+  action: IInvestigationCheck["action"];
+  result: IInvestigationCheck["result"];
   source: string;
 }
 
@@ -430,7 +406,7 @@ function ExplanationBlock({ action, result, source }: ExplanationBlockProps) {
           <Typography variant="md/semibold">Documents</Typography>
           <div className="border border-gray-200 rounded-lg">
             <Accordion type="single" collapsible>
-              {action?.files?.map((f: File, i: number) => (
+              {action?.files?.map((f: ICheckFile, i: number) => (
                 <AccordionItem key={f.filename} value={f.filename + i}>
                   <AccordionTrigger className="group flex items-center justify-between w-full p-3 pr-5 cursor-pointer border-b border-gray-200">
                     <a className="flex gap-1" href={f.url} target="_blank">

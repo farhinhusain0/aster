@@ -265,21 +265,6 @@ router.get(
       {
         $limit: limit,
       },
-      {
-        $lookup: {
-          from: "investigationchecks", // The collection name for InvestigationCheck
-          localField: "_id",
-          foreignField: "investigation",
-          as: "checks",
-          pipeline: [
-            {
-              $sort: {
-                createdAt: -1,
-              },
-            },
-          ],
-        },
-      },
     ]);
 
     return res.status(200).json({
@@ -310,7 +295,7 @@ router.get(
           pipeline: [
             {
               $sort: {
-                createdAt: -1,
+                createdAt: 1,
               },
             },
           ],
