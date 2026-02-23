@@ -9,7 +9,7 @@ import {
 } from "@radix-ui/react-accordion";
 import { ChevronDown, LinkExternal01 } from "@untitledui/icons";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { vs } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { githubGist as ideStyle } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 export function SentryStackTrace({
   latestEvent,
@@ -28,7 +28,7 @@ export function SentryStackTrace({
 
   return (
     <>
-      <Typography variant="sm/normal" className="text-primary">
+      <Typography variant="md/normal" className="text-black">
         {title}
       </Typography>
       <div className="rounded-lg border border-secondary overflow-hidden">
@@ -54,7 +54,7 @@ export function SentryStackTrace({
               <AccordionContent className="overflow-hidden">
                 <SyntaxHighlighter
                   language="javascript"
-                  style={vs}
+                  style={ideStyle}
                   showLineNumbers
                   startingLineNumber={frame.startLine}
                   wrapLines
@@ -63,24 +63,10 @@ export function SentryStackTrace({
                       display: "block",
                     };
                     if (frame.errorLine === lineNumber) {
-                      style.backgroundColor = "rgba(239, 68, 68, 0.15)";
-                      style.borderLeft = "3px solid #ef4444";
-                      style.paddingLeft = "4px";
+                      style.backgroundColor = "var(--color-gray-100)";
                     }
                     return { style };
-                  }}
-                  customStyle={{
-                    margin: 0,
-                    padding: "12px 0",
-                    fontSize: "0.8125rem",
-                    lineHeight: 1.6,
-                    background: "transparent",
-                  }}
-                  lineNumberStyle={{
-                    minWidth: "3em",
-                    paddingRight: "1em",
-                    color: "#9ca3af",
-                  }}
+                  }}            
                 >
                   {frame.code}
                 </SyntaxHighlighter>

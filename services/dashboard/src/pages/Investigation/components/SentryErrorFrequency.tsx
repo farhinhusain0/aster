@@ -50,7 +50,7 @@ export function SentryErrorFrequency({
 
   return (
     <>
-      <Typography variant="sm/normal" className="text-primary">
+      <Typography variant="md/normal" className="text-black">
         {count} occurrences in the last 24 hours
       </Typography>
       <div className="border border-secondary rounded-lg p-3">
