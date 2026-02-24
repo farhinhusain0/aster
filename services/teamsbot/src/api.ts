@@ -41,7 +41,8 @@ interface UpdateInvestigationParams {
   hypothesis: string;
   rootCause: string;
   confidenceLevel: string;
-  codeChangesSHA: string;
+  codeChangesDescription: string;
+  codeChangeSHAs: string[];
   recommendedFix: string;
   investigationId: string;
   email?: string;
@@ -54,7 +55,8 @@ export async function updateInvestigation({
   hypothesis,
   rootCause,
   confidenceLevel,
-  codeChangesSHA,
+  codeChangesDescription,
+  codeChangeSHAs,
   recommendedFix,
   investigationId,
   email = "",
@@ -68,7 +70,8 @@ export async function updateInvestigation({
       hypothesis,
       rootCause,
       confidenceLevel,
-      codeChangesSHA,
+      codeChangesDescription,
+      codeChangeSHAs,
       recommendedFix,
       investigationId,
       vendorName,

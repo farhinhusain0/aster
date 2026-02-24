@@ -138,7 +138,8 @@ export async function handleTeamsSubscriptionNotification(
             hypothesis,
             rootCause,
             confidenceLevel,
-            codeChangesSHA,
+            codeChangesDescription,
+            codeChangeSHAs,
             recommendedFix,
           } = JSON.parse(response.output);
 
@@ -146,7 +147,8 @@ export async function handleTeamsSubscriptionNotification(
             hypothesis,
             rootCause,
             confidenceLevel,
-            codeChangesSHA,
+            codeChangesDescription,
+            codeChangeSHAs,
             recommendedFix,
             investigationId: response.investigationId,
             incidentId,

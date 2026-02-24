@@ -19,10 +19,6 @@ export const InvestigationSchema = new Schema<IInvestigation>(
       enum: InvestigationConfidenceLevel,
       default: InvestigationConfidenceLevel.High,
     },
-    codeChangesSHA: {
-      type: String,
-      default: "",
-    },
     organization: {
       type: Schema.Types.ObjectId,
       ref: "Organization",

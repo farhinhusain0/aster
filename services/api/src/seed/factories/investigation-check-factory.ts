@@ -49,6 +49,8 @@ export const SEED_INVESTIGATION_CHECK_PRESETS = {
     action: {
       request:
         "PaymentService 500 error in charge.js processing logic, focusing on 'Payment charge failed' errors and transaction handling",
+      codeChangeSHAs: ["9237f86a5b8cafa96cbdd59824529536de515d2c"],
+      codeChangesDescription: "A change was made to the charge.js file to handle the payment charge failed error.",
       files: [
         {
           filename: "demo.ts",

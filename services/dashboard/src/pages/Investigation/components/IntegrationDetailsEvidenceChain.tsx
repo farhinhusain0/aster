@@ -11,6 +11,7 @@ import Typography from "@/components/common/Typography";
 import { icons } from "@/components/Connection/icons";
 import { ConnectionName } from "@/types/Connections";
 import {
+  ICodeChangeDiffFile,
   IInvestigation,
   IInvestigationCheck,
   InvestigationCheckSource,
@@ -98,7 +99,7 @@ interface EvidenceCardData {
 }
 
 function getEvidenceCards(investigation: IInvestigation): EvidenceCardData[] {
-  const { checks, codeChangesSHA } = investigation;
+  const { checks } = investigation;
   const cards: EvidenceCardData[] = [];
 
   for (const check of checks) {
@@ -107,7 +108,7 @@ function getEvidenceCards(investigation: IInvestigation): EvidenceCardData[] {
     }
 
     if (check.source === InvestigationCheckSource.Github) {
-      const card = getGithubCard(check, codeChangesSHA);
+      const card = getGithubCard(check);
       if (card) cards.push(card);
     }
   }
@@ -199,23 +200,35 @@ function getSentryCards(check: IInvestigationCheck): EvidenceCardData[] {
   ];
 }
 
-function getGithubCard(
-  check: IInvestigationCheck,
-  codeChangeSHA: string,
-): EvidenceCardData | null {
+interface MatchedDiffFile extends ICodeChangeDiffFile {
+  repoName: string;
+  sha: string;
+}
+
+function getGithubCard(check: IInvestigationCheck): EvidenceCardData | null {
   const sourceName = "GitHub";
   const SourceLogo = icons[ConnectionName.Github];
   const { action } = check;
+  const { codeChangeSHAs } = action ?? {};
 
-  if (!action?.diffs) {
+  if (!codeChangeSHAs?.length || !action?.diffs) {
     return null;
   }
 
-  const matchedDiff = Object.entries(action.diffs)
+  const codeChangesDescription = action?.codeChangesDescription ?? "";
+  const matchedDiffFiles: MatchedDiffFile[] = Object.entries(action.diffs)
     .flatMap(([diffKey, diffs]) =>
-      diffs.map((item) => ({ ...item, repoName: diffKey })),
+      diffs.commits.map((item) => ({
+        ...item,
+        files: item.files.map((file) => ({
+          ...file,
+          repoName: diffKey,
+          sha: item.sha,
+        })),
+      })),
     )
-    .find((item) => item.sha === codeChangeSHA);
+    .filter((item) => codeChangeSHAs?.includes(item.sha) ?? false)
+    .flatMap((item) => item.files);
 
   return {
     key: `${check._id}-code-change`,
@@ -224,19 +237,32 @@ function getGithubCard(
     name: "Correlated code change",
     content: (
       <>
-        <CodeBlock language="diff">{matchedDiff?.diff as string}</CodeBlock>
-        <div className="flex justify-end mt-4">
-          <Button
-            color="link-gray"
-            size="sm"
-            iconTrailing={<LinkExternal01 size={20} />}
-            href={`https://github.com/${matchedDiff?.repoName}/commit/${codeChangeSHA}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View in GitHub
-          </Button>
-        </div>
+        <Typography variant="md/normal" className="text-black">
+          {codeChangesDescription}
+        </Typography>
+        <Accordion type="single" collapsible size="xs" className="mt-4">
+          {matchedDiffFiles.map((file) => (
+            <AccordionItem key={file.filename} value={file.filename}>
+              <AccordionTrigger>{file.filename}</AccordionTrigger>
+              <AccordionContent>
+                <CodeBlock language="diff">{file.patch as string}</CodeBlock>
+
+                <div className="flex justify-end my-4 mr-4">
+                  <Button
+                    color="link-gray"
+                    size="sm"
+                    iconTrailing={<LinkExternal01 size={20} />}
+                    href={`https://github.com/${file.repoName}/commit/${file.sha}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View in GitHub
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </>
     ),
   };

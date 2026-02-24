@@ -6,6 +6,7 @@ import {
   VendorName,
   JiraServiceManagementIntegration,
   IOrganization,
+  investigationCheckModel,
 } from "@aster/db";
 import { checkAuth, getDBUser } from "../middlewares/auth";
 import { getSlackUser } from "../middlewares/slack";
@@ -27,7 +28,8 @@ router.post(
       hypothesis,
       rootCause,
       recommendedFix,
-      codeChangesSHA,
+      codeChangeSHAs,
+      codeChangesDescription,
       confidenceLevel,
       pdIncidentId,
       investigationId,
@@ -59,6 +61,19 @@ router.post(
 
     const pdIncident = await pdClient.getIncident(pdIncidentId);
 
+    await investigationCheckModel.getOneAndUpdateByFilter(
+      {
+        investigation: investigationId,
+        source: "github",
+      },
+      {
+        $set: {
+          "action.codeChangeSHAs": codeChangeSHAs,
+          "action.codeChangesDescription": codeChangesDescription,
+        },
+      },
+    );
+
     const investigation = await investigationModel.getOneAndUpdate(
       { _id: investigationId },
       {
@@ -66,7 +81,6 @@ router.post(
         rootCause,
         recommendedFix,
         confidenceLevel,
-        codeChangesSHA,
         pdIncidentId,
         pdDetails: pdIncident.incident,
         status: "active",
@@ -86,7 +100,8 @@ router.post(
       hypothesis,
       rootCause,
       confidenceLevel,
-      codeChangesSHA,
+      codeChangeSHAs,
+      codeChangesDescription,
       recommendedFix,
       vendorName,
       incidentId,
@@ -160,6 +175,19 @@ router.post(
       pdDetails = pdIncident.incident;
     }
 
+    await investigationCheckModel.getOneAndUpdateByFilter(
+      {
+        investigation: investigationId,
+        source: "github",
+      },
+      {
+        $set: {
+          "action.codeChangeSHAs": codeChangeSHAs,
+          "action.codeChangesDescription": codeChangesDescription,
+        },
+      },
+    );
+
     await investigationModel.getOneAndUpdate(
       { _id: investigationId },
       {
@@ -167,7 +195,6 @@ router.post(
         hypothesis,
         rootCause,
         confidenceLevel,
-        codeChangesSHA,
         recommendedFix,
         jsmDetails,
         pdDetails,

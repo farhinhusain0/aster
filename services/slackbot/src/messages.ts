@@ -113,7 +113,8 @@ export function attachMessages(app: App) {
           hypothesis,
           recommendedFix,
           confidenceLevel,
-          codeChangesSHA,
+          codeChangeSHAs,
+          codeChangesDescription,
         } = JSON.parse(output);
         finalResponse = hypothesis;
 
@@ -123,7 +124,8 @@ export function attachMessages(app: App) {
           rootCause,
           recommendedFix,
           confidenceLevel,
-          codeChangesSHA,
+          codeChangeSHAs,
+          codeChangesDescription,
           pdIncidentId,
           email,
           team,

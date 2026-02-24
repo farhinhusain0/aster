@@ -21,11 +21,23 @@ export interface ICheckFile {
   text?: string;
 }
 
+export interface ICodeChangeDiffFile {
+  filename: string;
+  patch: string;
+}
+
 export interface ICodeChangeDiff {
-  sha: string;
-  author: string;
-  date: string;
-  diff: string;
+  commits: Array<{
+    author: {
+      username: string;
+      email: string;
+    },
+    files: Array<ICodeChangeDiffFile>,
+    date: string;
+    description: string;
+    message: string;
+    sha: string;
+  }>;
 }
 
 export interface ISentryIssue {
@@ -55,11 +67,13 @@ export interface IInvestigationCheck {
     query?: string;
     url?: string;
     files?: Array<ICheckFile>;
-    diffs?: Record<string, ICodeChangeDiff[]>;
+    diffs?: Record<string, ICodeChangeDiff>;
     issue?: ISentryIssue;
     issue_title?: string;
     stats?: ISentryStats;
     latest_event?: object;
+    codeChangeSHAs?: string[];
+    codeChangesDescription?: string;
   };
 }
 

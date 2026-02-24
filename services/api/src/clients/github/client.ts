@@ -30,11 +30,13 @@ export class GithubClient {
     return new this(octokit);
   }
 
+  private get headers() {
+    return { "X-GitHub-Api-Version": "2022-11-28" } as const;
+  }
+
   async getOrgs() {
     const { data } = await this.octokit.request("GET /user/orgs", {
-      headers: {
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
+      headers: this.headers,
     });
 
     return data;
@@ -43,9 +45,7 @@ export class GithubClient {
   async getRepos(org: string) {
     const { data } = await this.octokit.request(`GET /orgs/${org}/repos`, {
       org: "ORG",
-      headers: {
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
+      headers: this.headers,
     });
 
     return data;
@@ -57,9 +57,7 @@ export class GithubClient {
       {
         owner: "OWNER",
         repo: "REPO",
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
+        headers: this.headers,
       },
     );
 
@@ -90,13 +88,124 @@ export class GithubClient {
       {
         owner: "OWNER",
         repo: "REPO",
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
+        headers: this.headers,
       },
     );
 
     return data;
+  }
+
+  private extractAuthor(commit: {
+    author: { login?: string; email?: string | null } | null;
+    commit: { author: { name?: string; email?: string | null } | null };
+  }) {
+    const githubUser = commit.author;
+    const commitAuthor = commit.commit.author || {};
+    return {
+      username: githubUser?.login ?? commitAuthor.name ?? "unknown",
+      email: commitAuthor.email ?? githubUser?.email ?? "",
+    };
+  }
+
+  private parseCommitMessage(fullMessage: string) {
+    const lines = fullMessage.split("\n");
+    return {
+      message: lines[0] || "",
+      description: lines.slice(1).join("\n").trim() || null,
+    };
+  }
+
+  private extractFileChanges(
+    files: Array<{
+      patch?: string;
+      filename: string;
+      previous_filename?: string;
+      status?: string;
+    }>,
+    filterPath?: string,
+  ) {
+    const result: Array<{
+      filename: string;
+      previous_filename: string | null;
+      status: string | undefined;
+      patch: string | null;
+    }> = [];
+
+    for (const file of files) {
+      if (
+        filterPath &&
+        file.filename !== filterPath &&
+        file.previous_filename !== filterPath
+      )
+        continue;
+
+      const { patch, filename, previous_filename, status } = file;
+      if (status === "renamed") {
+        result.push({
+          filename,
+          previous_filename: previous_filename ?? null,
+          status,
+          patch: null,
+        });
+      } else if (patch) {
+        result.push({
+          filename,
+          previous_filename: previous_filename || null,
+          status,
+          patch,
+        });
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Fetches full commit details for each commit and returns a normalized
+   * array of commit data with author, message, and file changes.
+   * When filterPath is provided, only file changes matching that path are included.
+   */
+  private async enrichCommits(
+    owner: string,
+    repo: string,
+    commits: Array<{
+      sha: string;
+      author: { login?: string; email?: string | null } | null;
+      commit: {
+        author: { name?: string; email?: string | null; date?: string } | null;
+      };
+    }>,
+    filterPath?: string,
+  ) {
+    const commitsData = [];
+
+    for (const commit of commits) {
+      const { data: commitDetails } = await this.octokit.rest.repos.getCommit({
+        owner,
+        repo,
+        ref: commit.sha,
+      });
+
+      const author = this.extractAuthor(commit);
+      const { message, description } = this.parseCommitMessage(
+        commitDetails.commit.message || "",
+      );
+      const files = this.extractFileChanges(
+        commitDetails.files || [],
+        filterPath,
+      );
+
+      commitsData.push({
+        sha: commit.sha,
+        author,
+        date: commit.commit.author?.date ?? "",
+        message,
+        description,
+        files,
+      });
+    }
+
+    return commitsData;
   }
 
   /**
@@ -116,27 +225,20 @@ export class GithubClient {
     until: string; // ISO8601 date string
     branch: string;
   }) {
-    const productionBranch = await this.getBranch({
-      owner,
-      repo,
-      branch,
-    });
+    const productionBranch = await this.getBranch({ owner, repo, branch });
 
     if (!productionBranch) {
       console.error("Could not find production branch");
       return { commits: [], message: "Could not find production branch" };
     }
 
-    const branchName = productionBranch.data.name;
-
-    // Fetch commits on the branch in the given time range
     const { data: commits } = await this.octokit.rest.repos.listCommits({
       owner,
       repo,
-      sha: branchName,
+      sha: productionBranch.data.name,
       since,
       until,
-      per_page: 100, // Adjust if you want more/less, pagination not handled here
+      per_page: 100,
     });
 
     if (!commits.length) {
@@ -146,67 +248,7 @@ export class GithubClient {
       };
     }
 
-    const commitsData = [];
-
-    for (const commit of commits) {
-      const commitSha = commit.sha;
-      const githubUser = commit.author;
-      const commitAuthor = commit.commit.author || {};
-
-      // Get commit details (to get file changes and patch)
-      const { data: commitDetails } = await this.octokit.rest.repos.getCommit({
-        owner,
-        repo,
-        ref: commitSha,
-      });
-
-      const email = commitAuthor.email ?? githubUser?.email ?? "";
-      const username = githubUser?.login ?? commitAuthor.name ?? "unknown";
-
-      // Extract commit message and description
-      const fullMessage = commitDetails.commit.message || "";
-      const messageLines = fullMessage.split("\n");
-      const commitMessage = messageLines[0] || "";
-      const commitDescription = messageLines.slice(1).join("\n").trim() || null;
-
-      const files = [];
-
-      // Add file-level diffs for this commit
-      if (Array.isArray(commitDetails.files)) {
-        for (const file of commitDetails.files) {
-          const { patch, filename, previous_filename, status } = file;
-          if (status === "renamed") {
-            files.push({
-              filename,
-              previous_filename,
-              status,
-              patch: null,
-            });
-          } else if (patch) {
-            files.push({
-              filename,
-              previous_filename: previous_filename || null,
-              status,
-              patch,
-            });
-          }
-        }
-      }
-
-      commitsData.push({
-        sha: commitSha,
-        author: {
-          username,
-          email,
-        },
-        date: commitAuthor.date ?? "",
-        message: commitMessage,
-        description: commitDescription,
-        files,
-      });
-    }
-
-    return { commits: commitsData };
+    return { commits: await this.enrichCommits(owner, repo, commits) };
   }
 
   async getIssueComments({
@@ -225,6 +267,7 @@ export class GithubClient {
     });
     return data;
   }
+
   async createNewIssueComment({
     owner,
     repo,
@@ -258,12 +301,10 @@ export class GithubClient {
     branch: string;
     limit: number;
   }) {
-    // Remove leading slash if present from filePath
     if (filePath.startsWith("/")) {
       filePath = filePath.slice(1);
     }
 
-    // Get the last `limit` commits that modified this file
     const { data: commits } = await this.octokit.rest.repos.listCommits({
       owner,
       repo,
@@ -272,40 +313,15 @@ export class GithubClient {
       per_page: limit,
     });
 
-    const results: Array<{
-      sha: string;
-      author: string | null;
-      date: string;
-      diff: string;
-    }> = [];
-
-    for (const commit of commits) {
-      const {
-        sha,
-        commit: { author },
-        author: githubUser,
-      } = commit;
-
-      // Get the commit details, including changed files and their patches
-      const { data: commitData } = await this.octokit.rest.repos.getCommit({
-        owner,
-        repo,
-        ref: sha,
-      });
-
-      // Find the entry for this file in the changed files and extract the patch
-      const fileInfo = commitData.files?.find(
-        (f) => f.filename === filePath || f.previous_filename === filePath,
-      );
-
-      results.push({
-        sha,
-        author: githubUser?.login ?? author?.name ?? null,
-        date: author?.date ?? "",
-        diff: fileInfo?.patch || "[no changes or binary file]",
-      });
+    if (!commits.length) {
+      return {
+        commits: [],
+        message: "No commits found for the given file.",
+      };
     }
 
-    return results;
+    return {
+      commits: await this.enrichCommits(owner, repo, commits, filePath),
+    };
   }
 }

@@ -9,7 +9,6 @@ import {
   VendorName,
 } from "@aster/db";
 import { Document, nodesToText } from "../../rag";
-// import { checksSummaryPrompt, dataExplanationPrompt } from "../../prompts";
 
 export default async function (context: RunContext) {
   const index = await indexModel.getOne({
@@ -79,38 +78,6 @@ export default async function (context: RunContext) {
                   githubDocuments.push(document);
                 }
               });
-
-              // const githubDocumentsText = nodesToText(githubDocuments);
-
-              // const queryExplanationPrompt = await dataExplanationPrompt.format(
-              //   {
-              //     toolDescription:
-              //       "Using semantic search to find relevant files from the codebase for the incident",
-              //     data: githubDocumentsText,
-              //     query: query,
-              //     context: incidentLabel,
-              //   },
-              // );
-              // const explanationAiResponse = await chatModel.invoke(
-              //   queryExplanationPrompt,
-              //   {
-              //     callbacks: [],
-              //   },
-              // );
-
-              // const checkSummaryPrompt = await checksSummaryPrompt.format({
-              //   toolDescription:
-              //     "Using semantic search to find relevant files from the codebase for the incident",
-              //   query,
-              //   result: explanationAiResponse.content.toString(),
-              //   context: incidentLabel,
-              // });
-              // const summaryAiResponse = await chatModel.invoke(
-              //   checkSummaryPrompt,
-              //   {
-              //     callbacks: [],
-              //   },
-              // );
 
               const filesData = githubDocuments.map((doc) => ({
                 filename: doc.metadata.file_name,
