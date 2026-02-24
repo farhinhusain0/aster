@@ -205,7 +205,7 @@ function getGithubCard(check: IInvestigationCheck): EvidenceCardData | null {
   const { action } = check;
   const { codeChangeSHAs } = action ?? {};
 
-  if (!codeChangeSHAs?.length || !action?.diffs) {
+  if (!codeChangeSHAs?.length && !action?.diffs) {
     return null;
   }
 
@@ -219,7 +219,7 @@ function getGithubCard(check: IInvestigationCheck): EvidenceCardData | null {
         <CorrelatedCodeChange
           codeChangesDescription={action?.codeChangesDescription ?? ""}
           diffs={action?.diffs ?? {}}
-          codeChangeSHAs={codeChangeSHAs}
+          codeChangeSHAs={codeChangeSHAs ?? []}
         />
       </>
     ),

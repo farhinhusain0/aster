@@ -43,36 +43,38 @@ export function CorrelatedCodeChange({
       <Typography variant="md/normal" className="text-black">
         {codeChangesDescription}
       </Typography>
-      <Accordion
-        type="multiple"
-        size="xs"
-        className="mt-4"
-        defaultValue={
-          matchedDiffFiles.length > 0 ? [matchedDiffFiles[0].filename] : []
-        }
-      >
-        {matchedDiffFiles.map((file) => (
-          <AccordionItem key={file.filename} value={file.filename}>
-            <AccordionTrigger>{file.filename}</AccordionTrigger>
-            <AccordionContent>
-              <CodeBlock language="diff">{file.patch as string}</CodeBlock>
+      {matchedDiffFiles.length > 0 && (
+        <Accordion
+          type="multiple"
+          size="xs"
+          className="mt-4"
+          defaultValue={
+            matchedDiffFiles.length > 0 ? [matchedDiffFiles[0].filename] : []
+          }
+        >
+          {matchedDiffFiles.map((file) => (
+            <AccordionItem key={file.filename} value={file.filename}>
+              <AccordionTrigger>{file.filename}</AccordionTrigger>
+              <AccordionContent>
+                <CodeBlock language="diff">{file.patch as string}</CodeBlock>
 
-              <div className="flex justify-end my-4 mr-4">
-                <Button
-                  color="link-gray"
-                  size="sm"
-                  iconTrailing={<LinkExternal01 size={20} />}
-                  href={`https://github.com/${file.repoName}/commit/${file.sha}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View in GitHub
-                </Button>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+                <div className="flex justify-end my-4 mr-4">
+                  <Button
+                    color="link-gray"
+                    size="sm"
+                    iconTrailing={<LinkExternal01 size={20} />}
+                    href={`https://github.com/${file.repoName}/commit/${file.sha}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View in GitHub
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      )}
     </>
   );
 }
