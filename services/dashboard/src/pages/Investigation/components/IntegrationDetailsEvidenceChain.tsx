@@ -240,7 +240,14 @@ function getGithubCard(check: IInvestigationCheck): EvidenceCardData | null {
         <Typography variant="md/normal" className="text-black">
           {codeChangesDescription}
         </Typography>
-        <Accordion type="single" collapsible size="xs" className="mt-4">
+        <Accordion
+          type="multiple"
+          size="xs"
+          className="mt-4"
+          defaultValue={
+            matchedDiffFiles.length > 0 ? [matchedDiffFiles[0].filename] : []
+          }
+        >
           {matchedDiffFiles.map((file) => (
             <AccordionItem key={file.filename} value={file.filename}>
               <AccordionTrigger>{file.filename}</AccordionTrigger>
