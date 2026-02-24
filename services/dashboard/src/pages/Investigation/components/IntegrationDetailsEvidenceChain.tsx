@@ -6,12 +6,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/common/Accordion";
-import CodeBlock from "@/components/common/CodeBlock";
 import Typography from "@/components/common/Typography";
 import { icons } from "@/components/Connection/icons";
 import { ConnectionName } from "@/types/Connections";
 import {
-  ICodeChangeDiffFile,
   IInvestigation,
   IInvestigationCheck,
   InvestigationCheckSource,
@@ -20,6 +18,7 @@ import {
 } from "@/types/Investigtion";
 import { ClockFastForward, LinkExternal01 } from "@untitledui/icons";
 import { useParams } from "react-router-dom";
+import { CorrelatedCodeChange } from "./CorrelatedCodeChange";
 import { SentryErrorFrequency } from "./SentryErrorFrequency";
 import { SentryStackTrace } from "./SentryStackTrace";
 
@@ -200,11 +199,6 @@ function getSentryCards(check: IInvestigationCheck): EvidenceCardData[] {
   ];
 }
 
-interface MatchedDiffFile extends ICodeChangeDiffFile {
-  repoName: string;
-  sha: string;
-}
-
 function getGithubCard(check: IInvestigationCheck): EvidenceCardData | null {
   const sourceName = "GitHub";
   const SourceLogo = icons[ConnectionName.Github];
@@ -215,21 +209,6 @@ function getGithubCard(check: IInvestigationCheck): EvidenceCardData | null {
     return null;
   }
 
-  const codeChangesDescription = action?.codeChangesDescription ?? "";
-  const matchedDiffFiles: MatchedDiffFile[] = Object.entries(action.diffs)
-    .flatMap(([diffKey, diffs]) =>
-      diffs.commits.map((item) => ({
-        ...item,
-        files: item.files.map((file) => ({
-          ...file,
-          repoName: diffKey,
-          sha: item.sha,
-        })),
-      })),
-    )
-    .filter((item) => codeChangeSHAs?.includes(item.sha) ?? false)
-    .flatMap((item) => item.files);
-
   return {
     key: `${check._id}-code-change`,
     sourceName,
@@ -237,39 +216,11 @@ function getGithubCard(check: IInvestigationCheck): EvidenceCardData | null {
     name: "Correlated code change",
     content: (
       <>
-        <Typography variant="md/normal" className="text-black">
-          {codeChangesDescription}
-        </Typography>
-        <Accordion
-          type="multiple"
-          size="xs"
-          className="mt-4"
-          defaultValue={
-            matchedDiffFiles.length > 0 ? [matchedDiffFiles[0].filename] : []
-          }
-        >
-          {matchedDiffFiles.map((file) => (
-            <AccordionItem key={file.filename} value={file.filename}>
-              <AccordionTrigger>{file.filename}</AccordionTrigger>
-              <AccordionContent>
-                <CodeBlock language="diff">{file.patch as string}</CodeBlock>
-
-                <div className="flex justify-end my-4 mr-4">
-                  <Button
-                    color="link-gray"
-                    size="sm"
-                    iconTrailing={<LinkExternal01 size={20} />}
-                    href={`https://github.com/${file.repoName}/commit/${file.sha}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View in GitHub
-                  </Button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <CorrelatedCodeChange
+          codeChangesDescription={action?.codeChangesDescription ?? ""}
+          diffs={action?.diffs ?? {}}
+          codeChangeSHAs={codeChangeSHAs}
+        />
       </>
     ),
   };
