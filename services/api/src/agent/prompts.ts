@@ -424,7 +424,7 @@ FIELD DEFINITIONS:
    - Why are the changes they made?
    - Who are the ones who made the changes?
    - When are the changes they made?
-- "codeChangeSHAs": The SHAs of the commits of any code changes that might be related to the incident. Return empty array if no code changes are found.
+- "codeChangeSHAs": The SHAs of the commits of any code changes that might be related to the incident.
 - "confidenceLevel": A string between "low", "medium", "high" that represents the confidence level in the root cause.
 - "hypothesis": A single, concise paragraph (≈50-120 words) that clearly includes:
    - Number of incidents and their frequency (from logs)
@@ -452,4 +452,3 @@ IMPORTANT:
   - Do not assume and give a response, always ask for context and information from tools to give a more accurate response
   - Always ask for context and information from tools to give a more accurate response
   - Do not make up information, always ask for tools to give the most accurate response`;
-
