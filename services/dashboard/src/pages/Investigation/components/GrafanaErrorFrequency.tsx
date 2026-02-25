@@ -14,35 +14,12 @@ import {
   YAxis,
 } from "recharts";
 
-/**
- * Transforms sparse Grafana log stats into a fixed-length 24-point time series
- * suitable for rendering a bar chart.
- *
- * Grafana returns log counts as sparse `[unixSeconds, countString]` tuples — only
- * timestamps with actual data are included, so there can be far fewer than 24 entries.
- * The chart, however, needs a consistent 24-bar series covering the last 24 hours so
- * that the visual spacing is uniform and gaps in activity are clearly visible.
- *
- * How it works:
- * 1. Converts the raw tuples into `{ timestamp (ms), value (number) }` objects,
- *    preserving the original timestamps exactly as returned by Grafana.
- * 2. Computes the total occurrence count across all data points.
- * 3. Pads the series with zero-value entries at hourly intervals — starting 23 hours
- *    before the latest data point — until the series contains exactly 24 entries.
- *    Existing timestamps are never overwritten or shifted.
- * 4. Sorts the combined series chronologically.
- *
- * @returns `{ chartData, count }` — the 24-point series and the total occurrence count.
- */
 function generateChartSeriesData(stats: IGrafanaLogsStats) {
-  // 1 hour in milliseconds, used as the interval between chart data points
-  const hourMs = 60 * 60 * 1000;
-
   // Convert raw Grafana tuples [unixSeconds, countString] into chart-friendly objects.
   // - Multiply timestamp by 1000 to convert from Unix seconds to JS milliseconds.
   // - Parse the string count into a number.
   let count = 0;
-  const dataPoints = stats.values.map(([ts, val]) => {
+  const chartData = stats.values.map(([ts, val]) => {
     const value = Number(val);
     count += value;
     return {
@@ -51,35 +28,14 @@ function generateChartSeriesData(stats: IGrafanaLogsStats) {
     };
   });
 
-  // Collect timestamps that already have data so we don't create duplicate entries
-  const occupied = new Set(dataPoints.map((d) => d.timestamp));
-
-  // Find the latest data point — the 24-hour window ends here
-  const latest = Math.max(...dataPoints.map((d) => d.timestamp));
-
-  // The window starts 23 hours before the latest point (24 slots inclusive)
-  const startMs = latest - 23 * hourMs;
-
-  // Generate zero-value filler entries at hourly intervals, skipping any
-  // timestamps that already exist in the real data, until we reach 24 total entries
-  const fillers: { timestamp: number; value: number }[] = [];
-  for (let i = 0; fillers.length + dataPoints.length < 24; i++) {
-    const ts = startMs + i * hourMs;
-    if (!occupied.has(ts)) {
-      fillers.push({ timestamp: ts, value: 0 });
-    }
-  }
-
-  // Merge real data points with fillers and sort chronologically for the chart
-  const chartData = [...dataPoints, ...fillers].sort(
-    (a, b) => a.timestamp - b.timestamp,
-  );
-
   return { chartData, count };
 }
 
 export function GrafanaErrorFrequency({ stats }: { stats: IGrafanaLogsStats }) {
-  const { chartData, count } = generateChartSeriesData(stats);
+  const { chartData: _chartData, count } = generateChartSeriesData(stats);
+
+  // Sometime we get uncomplete hour data, so we slice the last 24 hours
+  const chartData = _chartData.slice(-24);
 
   return (
     <div className="flex flex-col gap-4">

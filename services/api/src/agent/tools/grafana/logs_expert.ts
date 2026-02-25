@@ -88,29 +88,38 @@ async function fetchMetricsWithDeltas(
   end: number,
   token: string,
 ) {
-  // The apiUrl is constructed to query Prometheus metrics data via the Grafana HTTP API.
-  // It targets the `query_range` endpoint for the relevant Prometheus data source,
-  // requesting time series data for the metric `app_payment_transactions_total`
-  // over the last 24 hours, with data points at 1-hour intervals (step=3600 seconds).
-  const apiUrl = `${instanceURL}/datasources/proxy/${prometheusDataSourceId}/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=3600`;
+  // Query with a fine-grained step (60s) to maximize data capture from Prometheus,
+  // then aggregate deltas into hourly buckets for the bar graph.
+  const apiUrl = `${instanceURL}/datasources/proxy/${prometheusDataSourceId}/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=60`;
   const response = await axios.get(apiUrl, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
-  // The `query_range` endpoint gives a cumulative sum of the metrics.
-  // We need to convert it to a delta to get the number of metrics for each hour.
   for (const series of response.data.data.result) {
     const raw = series.values as [number, string][];
-    const deltas: [number, string][] = [];
+
+    const hourlyBuckets = new Map<number, number>();
+    for (let ts = start; ts < end; ts += 3600) {
+      hourlyBuckets.set(ts, 0);
+    }
+
+    // Calculate the delta for each hour
     for (let i = 1; i < raw.length; i++) {
       const curr = parseFloat(raw[i][1]);
       const prev = parseFloat(raw[i - 1][1]);
-      const count = curr < prev ? curr : curr - prev;
-      deltas.push([raw[i][0], String(Math.round(count))]);
+      const delta = curr < prev ? curr : curr - prev;
+      const bucketTs = start + Math.floor((raw[i][0] - start) / 3600) * 3600;
+      hourlyBuckets.set(bucketTs, (hourlyBuckets.get(bucketTs) ?? 0) + delta);
     }
-    series.values = deltas;
+
+    // Fill the missing hours with 0
+    const filled: [number, string][] = [];
+    for (let ts = start; ts < end; ts += 3600) {
+      filled.push([ts, String(Math.round(hourlyBuckets.get(ts) ?? 0))]);
+    }
+    series.values = filled;
   }
 
   return { apiUrl, response };
