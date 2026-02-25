@@ -10,6 +10,7 @@ import Typography from "@/components/common/Typography";
 import { icons } from "@/components/Connection/icons";
 import { ConnectionName } from "@/types/Connections";
 import {
+  IGrafanaLogsStats,
   IInvestigation,
   IInvestigationCheck,
   InvestigationCheckSource,
@@ -19,6 +20,7 @@ import {
 import { ClockFastForward, LinkExternal01 } from "@untitledui/icons";
 import { useParams } from "react-router-dom";
 import { CorrelatedCodeChange } from "./CorrelatedCodeChange";
+import { GrafanaErrorFrequency } from "./GrafanaErrorFrequency";
 import { SentryErrorFrequency } from "./SentryErrorFrequency";
 import { SentryStackTrace } from "./SentryStackTrace";
 
@@ -108,6 +110,11 @@ function getEvidenceCards(investigation: IInvestigation): EvidenceCardData[] {
 
     if (check.source === InvestigationCheckSource.Github) {
       const card = getGithubCard(check);
+      if (card) cards.push(card);
+    }
+
+    if (check.source === InvestigationCheckSource.Grafana) {
+      const card = getGrafanaCard(check);
       if (card) cards.push(card);
     }
   }
@@ -221,6 +228,29 @@ function getGithubCard(check: IInvestigationCheck): EvidenceCardData | null {
           diffs={action?.diffs ?? {}}
           codeChangeSHAs={codeChangeSHAs ?? []}
         />
+      </>
+    ),
+  };
+}
+
+function getGrafanaCard(check: IInvestigationCheck): EvidenceCardData | null {
+  const sourceName = "Grafana";
+  const SourceLogo = icons[ConnectionName.Grafana];
+  const { action } = check;
+  const { stats } = action ?? {};
+
+  if (!(stats as IGrafanaLogsStats)?.values.length) {
+    return null;
+  }
+
+  return {
+    key: `${check._id}-error-frequency`,
+    sourceName,
+    SourceLogo,
+    name: "Error frequency",
+    content: (
+      <>
+        <GrafanaErrorFrequency stats={stats as IGrafanaLogsStats} />
       </>
     ),
   };

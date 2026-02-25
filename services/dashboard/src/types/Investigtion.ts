@@ -31,8 +31,8 @@ export interface ICodeChangeDiff {
     author: {
       username: string;
       email: string;
-    },
-    files: Array<ICodeChangeDiffFile>,
+    };
+    files: Array<ICodeChangeDiffFile>;
     date: string;
     description: string;
     message: string;
@@ -56,6 +56,10 @@ export interface ISentryStats {
   }>;
 }
 
+export interface IGrafanaLogsStats {
+  values: Array<[number, string]>;
+}
+
 export interface IInvestigationCheck {
   _id: string;
   source: string;
@@ -70,7 +74,7 @@ export interface IInvestigationCheck {
     diffs?: Record<string, ICodeChangeDiff>;
     issue?: ISentryIssue;
     issue_title?: string;
-    stats?: ISentryStats;
+    stats?: ISentryStats | IGrafanaLogsStats;
     latest_event?: object;
     codeChangeSHAs?: string[];
     codeChangesDescription?: string;
