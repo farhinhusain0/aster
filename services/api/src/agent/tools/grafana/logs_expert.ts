@@ -68,19 +68,52 @@ Here are some examples that you can use:
 `;
 
 async function getPrometheusDataSourceId(instanceURL: string, token: string) {
-  const dataSourcesResponse = await axios.get(
-    `${instanceURL}/api/datasources`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const dataSourcesResponse = await axios.get(`${instanceURL}/datasources`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
   const dataSources = dataSourcesResponse.data;
   const prometheusDataSource = dataSources.find(
     (dataSource: { type: string }) => dataSource.type === "prometheus",
   );
   return prometheusDataSource?.id;
+}
+
+async function fetchMetricsWithDeltas(
+  instanceURL: string,
+  prometheusDataSourceId: string,
+  query: string,
+  start: number,
+  end: number,
+  token: string,
+) {
+  // The apiUrl is constructed to query Prometheus metrics data via the Grafana HTTP API.
+  // It targets the `query_range` endpoint for the relevant Prometheus data source,
+  // requesting time series data for the metric `app_payment_transactions_total`
+  // over the last 24 hours, with data points at 1-hour intervals (step=3600 seconds).
+  const apiUrl = `${instanceURL}/datasources/proxy/${prometheusDataSourceId}/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=3600`;
+  const response = await axios.get(apiUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  // The `query_range` endpoint gives a cumulative sum of the metrics.
+  // We need to convert it to a delta to get the number of metrics for each hour.
+  for (const series of response.data.data.result) {
+    const raw = series.values as [number, string][];
+    const deltas: [number, string][] = [];
+    for (let i = 1; i < raw.length; i++) {
+      const curr = parseFloat(raw[i][1]);
+      const prev = parseFloat(raw[i - 1][1]);
+      const count = curr < prev ? curr : curr - prev;
+      deltas.push([raw[i][0], String(Math.round(count))]);
+    }
+    series.values = deltas;
+  }
+
+  return { apiUrl, response };
 }
 
 export default async function (
@@ -110,26 +143,14 @@ export default async function (
         // ask LLM to pick the most relevant label.
         const query = `app_payment_transactions_total`;
 
-        // The apiUrl is constructed to query Prometheus metrics data via the Grafana HTTP API.
-        // It targets the `query_range` endpoint for the relevant Prometheus data source, 
-        // requesting time series data for the metric `app_payment_transactions_total` 
-        // over the last 24 hours, with data points at 1-hour intervals (step=3600 seconds).
-        const apiUrl = `${instanceURL}/datasources/proxy/${prometheusDataSourceId}/api/v1/query_range?query=${encodeURIComponent(query)}&start=${twentyFourHoursAgo}&end=${now}&step=3600`;
-        const response = await axios.get(apiUrl);
-
-        // The `query_range` endpoint gives a cumulative sum of the metrics.
-        // We need to convert it to a delta to get the number of metrics for each hour.
-        for (const series of response.data.data.result) {
-          const raw = series.values as [number, string][];
-          const deltas: [number, string][] = [];
-          for (let i = 1; i < raw.length; i++) {
-            const curr = parseFloat(raw[i][1]);
-            const prev = parseFloat(raw[i - 1][1]);
-            const count = curr < prev ? curr : curr - prev;
-            deltas.push([raw[i][0], String(Math.round(count))]);
-          }
-          series.values = deltas;
-        }
+        const { apiUrl, response } = await fetchMetricsWithDeltas(
+          instanceURL,
+          prometheusDataSourceId,
+          query,
+          twentyFourHoursAgo,
+          now,
+          token,
+        );
 
         const prompt = await PromptTemplate.fromTemplate(
           PROMPT_TEMPLATE,
