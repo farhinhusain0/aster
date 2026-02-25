@@ -34,19 +34,22 @@ export function SentryErrorFrequency({
     new Set([EVENT_COUNT_KEY]),
   );
 
-  const { count, chartData } = (() => {
+  const { count, chartData: _chartData } = (() => {
     if (selectedKey.has(EVENT_COUNT_KEY)) {
       return {
         count: issue?.count ?? 0,
-        chartData: stats?.timeSeries?.[0]?.values ?? [],
+        chartData: (stats?.timeSeries?.[0]?.values ?? []),
       };
     }
 
     return {
       count: issue?.userCount ?? 0,
-      chartData: stats?.timeSeries?.[1]?.values ?? [],
+      chartData: (stats?.timeSeries?.[1]?.values ?? []),
     };
   })();
+
+  // Sometime we get uncomplete hour data, so we slice the last 24 hours
+  const chartData = _chartData.slice(-24);
 
   return (
     <div className="flex flex-col gap-4">
