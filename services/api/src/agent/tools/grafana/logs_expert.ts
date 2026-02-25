@@ -67,6 +67,22 @@ Here are some examples that you can use:
 - What is the customer impact?
 `;
 
+async function getPrometheusDataSourceId(instanceURL: string, token: string) {
+  const dataSourcesResponse = await axios.get(
+    `${instanceURL}/api/datasources`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  const dataSources = dataSourcesResponse.data;
+  const prometheusDataSource = dataSources.find(
+    (dataSource: { type: string }) => dataSource.type === "prometheus",
+  );
+  return prometheusDataSource?.id;
+}
+
 export default async function (
   integration: GrafanaIntegration,
   context: RunContext,
@@ -75,18 +91,34 @@ export default async function (
     context.investigationId as string,
   );
   const { instanceURL } = integration.metadata;
+  const { token } = integration.credentials;
 
   return new DynamicStructuredTool({
     name: "logs_expert_tool",
     description: TOOL_DESCRIPTION,
     func: async ({ request, timeframe, incidentLabel }) => {
       try {
+        // We need a prometheus data source id to be able to query the metrics.
+        const prometheusDataSourceId = await getPrometheusDataSourceId(
+          instanceURL,
+          token,
+        );
         const now = Math.floor(Date.now() / 1000);
         const twentyFourHoursAgo = now - 24 * 60 * 60;
+        // TODO: This is a hack now for DEMO. We should fetch the label using
+        // ${instanceURL}/api/datasources/proxy/${datasourceUid}/api/v1/label/__name__/values and then
+        // ask LLM to pick the most relevant label.
         const query = `app_payment_transactions_total`;
-        const apiUrl = `${instanceURL}/datasources/proxy/1/api/v1/query_range?query=${encodeURIComponent(query)}&start=${twentyFourHoursAgo}&end=${now}&step=3600`;
+
+        // The apiUrl is constructed to query Prometheus metrics data via the Grafana HTTP API.
+        // It targets the `query_range` endpoint for the relevant Prometheus data source, 
+        // requesting time series data for the metric `app_payment_transactions_total` 
+        // over the last 24 hours, with data points at 1-hour intervals (step=3600 seconds).
+        const apiUrl = `${instanceURL}/datasources/proxy/${prometheusDataSourceId}/api/v1/query_range?query=${encodeURIComponent(query)}&start=${twentyFourHoursAgo}&end=${now}&step=3600`;
         const response = await axios.get(apiUrl);
 
+        // The `query_range` endpoint gives a cumulative sum of the metrics.
+        // We need to convert it to a delta to get the number of metrics for each hour.
         for (const series of response.data.data.result) {
           const raw = series.values as [number, string][];
           const deltas: [number, string][] = [];
