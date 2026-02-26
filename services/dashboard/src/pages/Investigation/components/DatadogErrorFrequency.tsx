@@ -3,7 +3,7 @@ import {
   selectEvenlySpacedItems,
 } from "@/components/application/charts/charts-base";
 import Typography from "@/components/common/Typography";
-import { IGrafanaLogsStats } from "@/types/Investigtion";
+import { IDatadogLogsStats } from "@/types/Investigtion";
 import {
   Bar,
   CartesianGrid,
@@ -14,31 +14,21 @@ import {
   YAxis,
 } from "recharts";
 
-function generateChartSeriesData(stats: IGrafanaLogsStats) {
-  // Convert raw Grafana tuples [unixSeconds, countString] into chart-friendly objects.
-  // - Multiply timestamp by 1000 to convert from Unix seconds to JS milliseconds.
-  // - Parse the string count into a number.
-  let count = 0;
-
+export function DatadogErrorFrequency({
+  stats,
+}: {
+  stats: IDatadogLogsStats[];
+}) {
   // Sometime we get uncomplete hour data, so we slice the last 24 hours
   // and add the overflow to the first hour
-  const overflow = stats.values.slice(0, -24);
-  const overflowSum = overflow.reduce((sum, [, val]) => sum + Number(val), 0);
-
-  const chartData = stats.values.slice(-24).map(([ts, val], i) => {
-    const value = Number(val) + (i === 0 ? overflowSum : 0);
-    count += value;
-    return {
-      timestamp: ts * 1000,
-      value: value,
-    };
-  });
-
-  return { chartData, count };
-}
-
-export function GrafanaErrorFrequency({ stats }: { stats: IGrafanaLogsStats }) {
-  const { chartData, count } = generateChartSeriesData(stats);
+  const overflow = stats.slice(0, -24);
+  const overflowSum = overflow.reduce((sum, item) => sum + item.value, 0);
+  const chartData = stats
+    .slice(-24)
+    .map((item, i) =>
+      i === 0 ? { ...item, value: item.value + overflowSum } : item,
+    );
+  const count = chartData.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
     <div className="flex flex-col gap-4">

@@ -60,6 +60,11 @@ export interface IGrafanaLogsStats {
   values: Array<[number, string]>;
 }
 
+export interface IDatadogLogsStats {
+  timestamp: string;
+  value: number;
+};
+
 export interface IInvestigationCheck {
   _id: string;
   source: string;
@@ -74,7 +79,7 @@ export interface IInvestigationCheck {
     diffs?: Record<string, ICodeChangeDiff>;
     issue?: ISentryIssue;
     issue_title?: string;
-    stats?: ISentryStats | IGrafanaLogsStats;
+    stats?: ISentryStats | IGrafanaLogsStats | IDatadogLogsStats[];
     latest_event?: object;
     codeChangeSHAs?: string[];
     codeChangesDescription?: string;

@@ -387,7 +387,10 @@ When investigating, follow these guidelines:
    - **Step 4: Broad Safety Net (CRITICAL)**:
      - **ALWAYS** use \`fetch_code_change_history\` for the **[Incident Start - 24h]** window.
      - This catches indirect dependencies (e.g., frontend changes causing backend errors, config updates).
-   - **Step 5: Deep Search (Expansion)**:
+   - **Step 5: Incident Impact Assessment**:
+     - **ALWAYS** use any available log or metrics tools to count incident occurrences and assess customer impact.
+     - This step provides concrete numbers for the final report.
+   - **Step 6: Deep Search (Expansion)**:
      - If root cause remains unclear, expand window to **[Incident Start - 72h]**.
 
 3) ANALYSIS REPORT FORMAT:
@@ -395,6 +398,7 @@ When investigating, follow these guidelines:
      - **Incident Summary**: What is happening?
      - **Evidence**: Specific logs, error messages, and code diffs found.
      - **Correlation**: How the code changes relate to the errors.
+     - **Incident Impact**: The number of occurrences of the incident and the customer impact.
      - **Root Cause Analysis**: Your best technical assessment.
    - Do not try to generate the final user response here; focus on gathering and structuring the technical facts for the hypothesis generator.`;
 

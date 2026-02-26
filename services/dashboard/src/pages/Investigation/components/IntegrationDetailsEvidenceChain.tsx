@@ -10,16 +10,17 @@ import Typography from "@/components/common/Typography";
 import { icons } from "@/components/Connection/icons";
 import { ConnectionName } from "@/types/Connections";
 import {
+  IDatadogLogsStats,
   IGrafanaLogsStats,
   IInvestigation,
   IInvestigationCheck,
   InvestigationCheckSource,
-  ISentryIssue,
   ISentryStats,
 } from "@/types/Investigtion";
 import { ClockFastForward, LinkExternal01 } from "@untitledui/icons";
 import { useParams } from "react-router-dom";
 import { CorrelatedCodeChange } from "./CorrelatedCodeChange";
+import { DatadogErrorFrequency } from "./DatadogErrorFrequency";
 import { GrafanaErrorFrequency } from "./GrafanaErrorFrequency";
 import { SentryErrorFrequency } from "./SentryErrorFrequency";
 import { SentryStackTrace } from "./SentryStackTrace";
@@ -117,6 +118,11 @@ function getEvidenceCards(investigation: IInvestigation): EvidenceCardData[] {
       const card = getGrafanaCard(check);
       if (card) cards.push(card);
     }
+
+    if (check.source === InvestigationCheckSource.Datadog) {
+      const card = getDatadogCard(check);
+      if (card) cards.push(card);
+    }
   }
 
   return cards;
@@ -183,10 +189,7 @@ function getSentryCards(check: IInvestigationCheck): EvidenceCardData[] {
       name: "Error frequency",
       content: (
         <>
-          <SentryErrorFrequency
-            issue={issue as ISentryIssue}
-            stats={stats as ISentryStats}
-          />
+          <SentryErrorFrequency stats={stats as ISentryStats} />
           {viewInSentry}
         </>
       ),
@@ -237,9 +240,9 @@ function getGrafanaCard(check: IInvestigationCheck): EvidenceCardData | null {
   const sourceName = "Grafana";
   const SourceLogo = icons[ConnectionName.Grafana];
   const { action } = check;
-  const { stats } = action ?? {};
+  const { stats } = action as { stats: IGrafanaLogsStats };
 
-  if (!(stats as IGrafanaLogsStats)?.values.length) {
+  if (!stats?.values.length) {
     return null;
   }
 
@@ -250,7 +253,30 @@ function getGrafanaCard(check: IInvestigationCheck): EvidenceCardData | null {
     name: "Error frequency",
     content: (
       <>
-        <GrafanaErrorFrequency stats={stats as IGrafanaLogsStats} />
+        <GrafanaErrorFrequency stats={stats} />
+      </>
+    ),
+  };
+}
+
+function getDatadogCard(check: IInvestigationCheck): EvidenceCardData | null {
+  const sourceName = "Datadog";
+  const SourceLogo = icons[ConnectionName.DataDog];
+  const { action } = check;
+  const { stats } = action as { stats: IDatadogLogsStats[] };
+
+  if (!stats?.length) {
+    return null;
+  }
+
+  return {
+    key: `${check._id}-error-frequency`,
+    sourceName,
+    SourceLogo,
+    name: "Error frequency",
+    content: (
+      <>
+        <DatadogErrorFrequency stats={stats} />
       </>
     ),
   };

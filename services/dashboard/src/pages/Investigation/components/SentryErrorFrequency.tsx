@@ -7,7 +7,7 @@ import {
   ButtonGroupItem,
 } from "@/components/base/button-group/button-group";
 import Typography from "@/components/common/Typography";
-import { ISentryIssue, ISentryStats } from "@/types/Investigtion";
+import { ISentryStats } from "@/types/Investigtion";
 import { useState } from "react";
 import type { Key } from "react-aria-components";
 import {
@@ -23,33 +23,30 @@ import {
 const EVENT_COUNT_KEY = "count()";
 const USER_COUNT_KEY = "count_unique(user)";
 
-export function SentryErrorFrequency({
-  issue,
-  stats,
-}: {
-  issue: ISentryIssue;
-  stats: ISentryStats;
-}) {
+export function SentryErrorFrequency({ stats }: { stats: ISentryStats }) {
   const [selectedKey, setSelectedKey] = useState<Set<Key>>(
     new Set([EVENT_COUNT_KEY]),
   );
 
-  const { count, chartData: _chartData } = (() => {
-    if (selectedKey.has(EVENT_COUNT_KEY)) {
-      return {
-        count: issue?.count ?? 0,
-        chartData: (stats?.timeSeries?.[0]?.values ?? []),
-      };
-    }
+  const { count, chartData } = (() => {
+    const idx = selectedKey.has(EVENT_COUNT_KEY) ? 0 : 1;
+    const allValues = stats?.timeSeries?.[idx]?.values ?? [];
 
+    // Sometime we get uncomplete hour data, so we slice the last 24 hours
+    // and add the overflow to the first hour
+    const overflow = allValues.slice(0, -24);
+    const overflowSum = overflow.reduce((sum, item) => sum + item.value, 0);
+    
+    const data = allValues
+      .slice(-24)
+      .map((item, i) =>
+        i === 0 ? { ...item, value: item.value + overflowSum } : item,
+      );
     return {
-      count: issue?.userCount ?? 0,
-      chartData: (stats?.timeSeries?.[1]?.values ?? []),
+      count: data.reduce((acc, curr) => acc + curr.value, 0),
+      chartData: data,
     };
   })();
-
-  // Sometime we get uncomplete hour data, so we slice the last 24 hours
-  const chartData = _chartData.slice(-24);
 
   return (
     <div className="flex flex-col gap-4">
