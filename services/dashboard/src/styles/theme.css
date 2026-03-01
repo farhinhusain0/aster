@@ -925,6 +925,8 @@
     --width-generic-modal: 640px;
     --width-confirmation-modal: 500px;
     --width-auth-container: 360px;
+    --width-investigation-content: 592px;
+    --width-investigation-right-sidebar: 340px;
 
     /* max widths */
     --max-width-sidebar: 296px;
@@ -935,6 +937,8 @@
     --max-width-generic-modal: 640px;
     --max-width-confirmation-modal: 500px;
     --max-width-auth-container: 360px;
+    --max-width-investigation-content: 592px;
+    --max-width-investigation-right-sidebar: 340px;
 
     /* min widths */
     --min-width-sidebar: 296px;
@@ -945,6 +949,8 @@
     --min-width-generic-modal: 640px;
     --min-width-confirmation-modal: 500px;
     --min-width-auth-container: 360px;
+    --min-width-investigation-content: 592px;
+    --min-width-investigation-right-sidebar: 340px;
 
     /* heights */
     --height-appbar: 56px;

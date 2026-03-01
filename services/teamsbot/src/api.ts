@@ -14,7 +14,7 @@ export async function getCompletion({
   email,
   tenantId,
   isInvestigation,
-  secondaryInvestigationId
+  secondaryInvestigationId,
 }: CompletionParams) {
   const response = await axios.post(
     `${process.env.API_URL}/chat/completions/teams`,
@@ -22,7 +22,7 @@ export async function getCompletion({
       messages,
       metadata: {},
       isInvestigation,
-      secondaryInvestigationId
+      secondaryInvestigationId,
     },
     {
       headers: {
@@ -39,6 +39,11 @@ export async function getCompletion({
 
 interface UpdateInvestigationParams {
   hypothesis: string;
+  rootCause: string;
+  confidenceLevel: string;
+  codeChangesDescription: string;
+  codeChangeSHAs: string[];
+  recommendedFix: string;
   investigationId: string;
   email?: string;
   tenantId: string;
@@ -48,37 +53,55 @@ interface UpdateInvestigationParams {
 
 export async function updateInvestigation({
   hypothesis,
+  rootCause,
+  confidenceLevel,
+  codeChangesDescription,
+  codeChangeSHAs,
+  recommendedFix,
   investigationId,
   email = "",
   tenantId,
   vendorName,
   incidentId,
 }: UpdateInvestigationParams) {
-  const response = await axios.post(`${process.env.API_URL}/investigations/teams`, {
-    hypothesis,
-    investigationId,
-    vendorName,
-    incidentId,
-  }, {
-    headers: {
-      "x-teams-app-password": process.env.MICROSOFT_APP_PASSWORD,
-      "x-teams-app-id": process.env.MICROSOFT_APP_ID,
-      "x-teams-email": email,
-      "x-teams-tenant": tenantId,
+  const response = await axios.post(
+    `${process.env.API_URL}/investigations/teams`,
+    {
+      hypothesis,
+      rootCause,
+      confidenceLevel,
+      codeChangesDescription,
+      codeChangeSHAs,
+      recommendedFix,
+      investigationId,
+      vendorName,
+      incidentId,
     },
-  });
+    {
+      headers: {
+        "x-teams-app-password": process.env.MICROSOFT_APP_PASSWORD,
+        "x-teams-app-id": process.env.MICROSOFT_APP_ID,
+        "x-teams-email": email,
+        "x-teams-tenant": tenantId,
+      },
+    },
+  );
   return response.data;
 }
 
 export async function updateIncident(incidentId: string, tenantId: string) {
-  const response = await axios.post(`${process.env.API_URL}/investigations/teams/update-incident`, {
-    incidentId,
-  }, {
-    headers: {
-      "x-teams-app-password": process.env.MICROSOFT_APP_PASSWORD,
-      "x-teams-app-id": process.env.MICROSOFT_APP_ID,
-      "x-teams-tenant": tenantId,
+  const response = await axios.post(
+    `${process.env.API_URL}/investigations/teams/update-incident`,
+    {
+      incidentId,
     },
-  });
+    {
+      headers: {
+        "x-teams-app-password": process.env.MICROSOFT_APP_PASSWORD,
+        "x-teams-app-id": process.env.MICROSOFT_APP_ID,
+        "x-teams-tenant": tenantId,
+      },
+    },
+  );
   return response.data;
 }

@@ -1,23 +1,20 @@
-import { z } from "zod";
 import {
   GrafanaIntegration,
   investigationCheckModel,
   investigationModel,
 } from "@aster/db";
-import { Timeframe } from "../../../utils/dates";
-import { RunContext } from "../../../agent/types";
-import axios from "axios";
-import { chatModel } from "../../../agent/model";
-import { buildOutput } from "../utils";
-import {
-  checksSummaryPrompt,
-  dataExplanationPrompt,
-} from "../../../agent/prompts";
 import { PromptTemplate } from "@langchain/core/prompts";
+import axios from "axios";
 import { DynamicStructuredTool } from "langchain";
+import { z } from "zod";
+import { chatModel } from "../../../agent/model";
+import { RunContext } from "../../../agent/types";
+import { Timeframe } from "../../../utils/dates";
+import { buildOutput } from "../utils";
 
 const PROMPT_TEMPLATE = `
 You are a Grafana logs expert. You mission is to give user meaningful insights from Grafana logs. You will be given a stringified response of the logs. Your task is to analyze the logs and provide the user with the most relevant information. Please follow the below instructions when giving answer
+- Sum the values of the logs to get the total number of logs.
 - When writing response for transaction failed, we shouldn't say 23.3. Because it is a float value. We should say 23.
 - The response tone should be simple and easy to understand.
 - Be concise with your answers. Don't write messages that are too long. Try to say more with less words.
@@ -35,9 +32,19 @@ Log example:
             "job": "payment",
             "service_name": "payment"
         }},
-        "value": [[
-            1739164771.809,
-            "7"
+        "values": [[
+            [[
+                1771916740,
+                "7"
+            ]],
+            [[
+                1771995940,
+                "22"
+            ]],
+            [[
+                1771999540,
+                "8"
+            ]]
         ]]
     }}
 ]]
@@ -46,7 +53,7 @@ Request:
 Please find the number of failed payment transactions.
 
 Answer:
-There are total 7 failed payment transactions in last 24 hours for the given logs in the payment service. It seems like the payment charge failed for 7 transactions.
+There are total 37 failed payment transactions in last 24 hours for the given logs in the payment service. It seems like the payment charge failed for 37 transactions.
 
 Begin!
 
@@ -60,6 +67,64 @@ Here are some examples that you can use:
 - What is the customer impact?
 `;
 
+async function getPrometheusDataSourceId(instanceURL: string, token: string) {
+  const dataSourcesResponse = await axios.get(`${instanceURL}/datasources`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const dataSources = dataSourcesResponse.data;
+  const prometheusDataSource = dataSources.find(
+    (dataSource: { type: string }) => dataSource.type === "prometheus",
+  );
+  return prometheusDataSource?.id;
+}
+
+async function fetchMetricsWithDeltas(
+  instanceURL: string,
+  prometheusDataSourceId: string,
+  query: string,
+  start: number,
+  end: number,
+  token: string,
+) {
+  // Query with a fine-grained step (60s) to maximize data capture from Prometheus,
+  // then aggregate deltas into hourly buckets for the bar graph.
+  const apiUrl = `${instanceURL}/datasources/proxy/${prometheusDataSourceId}/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=60`;
+  const response = await axios.get(apiUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  for (const series of response.data.data.result) {
+    const raw = series.values as [number, string][];
+
+    const hourlyBuckets = new Map<number, number>();
+    for (let ts = start; ts < end; ts += 3600) {
+      hourlyBuckets.set(ts, 0);
+    }
+
+    // Calculate the delta for each hour
+    for (let i = 1; i < raw.length; i++) {
+      const curr = parseFloat(raw[i][1]);
+      const prev = parseFloat(raw[i - 1][1]);
+      const delta = curr < prev ? curr : curr - prev;
+      const bucketTs = start + Math.floor((raw[i][0] - start) / 3600) * 3600;
+      hourlyBuckets.set(bucketTs, (hourlyBuckets.get(bucketTs) ?? 0) + delta);
+    }
+
+    // Fill the missing hours with 0
+    const filled: [number, string][] = [];
+    for (let ts = start; ts < end; ts += 3600) {
+      filled.push([ts, String(Math.round(hourlyBuckets.get(ts) ?? 0))]);
+    }
+    series.values = filled;
+  }
+
+  return { apiUrl, response };
+}
+
 export default async function (
   integration: GrafanaIntegration,
   context: RunContext,
@@ -68,15 +133,33 @@ export default async function (
     context.investigationId as string,
   );
   const { instanceURL } = integration.metadata;
+  const { token } = integration.credentials;
 
   return new DynamicStructuredTool({
     name: "logs_expert_tool",
     description: TOOL_DESCRIPTION,
     func: async ({ request, timeframe, incidentLabel }) => {
       try {
-        const query = `increase(app_payment_transactions_total[24h])`;
-        const apiUrl = `${instanceURL}/datasources/proxy/1/api/v1/query?query=${query}`;
-        const response = await axios.get(apiUrl);
+        // We need a prometheus data source id to be able to query the metrics.
+        const prometheusDataSourceId = await getPrometheusDataSourceId(
+          instanceURL,
+          token,
+        );
+        const now = Math.floor(Date.now() / 1000);
+        const twentyFourHoursAgo = now - 24 * 60 * 60;
+        // TODO: This is a hack now for DEMO. We should fetch the label using
+        // ${instanceURL}/api/datasources/proxy/${datasourceUid}/api/v1/label/__name__/values and then
+        // ask LLM to pick the most relevant label.
+        const query = `app_payment_transactions_total`;
+
+        const { apiUrl, response } = await fetchMetricsWithDeltas(
+          instanceURL,
+          prometheusDataSourceId,
+          query,
+          twentyFourHoursAgo,
+          now,
+          token,
+        );
 
         const prompt = await PromptTemplate.fromTemplate(
           PROMPT_TEMPLATE,
@@ -92,40 +175,23 @@ export default async function (
 
         // Check and Create an investigation check
         if (context.shouldGenerateChecks && investigation) {
-          const queryExplanationPrompt = await dataExplanationPrompt.format({
-            toolDescription:
-              "Using Grafana logs to find number of failed payment transactions in the last 24 hours",
-            data: JSON.stringify(response.data),
-            query: query,
-            context: content.toString(),
-          });
-          const explanationAiResponse = await chatModel.invoke(
-            queryExplanationPrompt,
-            {
-              callbacks: [],
-            },
-          );
-
-          const checkSummaryPrompt = await checksSummaryPrompt.format({
-            toolDescription:
-              "Using Grafana logs to find number of failed payment transactions in the last 24 hours",
-            query: request,
-            result: explanationAiResponse.content.toString(),
-            context: incidentLabel,
-          });
-          const summaryAiResponse = await chatModel.invoke(checkSummaryPrompt, {
-            callbacks: [],
-          });
-
           const investigationCheck = await investigationCheckModel.getOne({
             investigation: investigation,
             source: "grafana",
           });
+          const stats = response.data.data.result[0];
 
           if (investigationCheck) {
             investigationCheck.result = {
-              summary: summaryAiResponse.content.toString(),
-              explanation: explanationAiResponse.content.toString(),
+              summary: "",
+              explanation: "",
+            };
+            investigationCheck.action = {
+              ...investigationCheck.action,
+              request: request,
+              query: query,
+              url: apiUrl,
+              stats: stats,
             };
             investigationCheck.updatedAt = new Date();
             await investigationCheck.save();
@@ -137,10 +203,11 @@ export default async function (
                 request: request,
                 query: query,
                 url: apiUrl,
+                stats: stats,
               },
               result: {
-                summary: summaryAiResponse.content.toString(),
-                explanation: explanationAiResponse.content.toString(),
+                summary: "",
+                explanation: "",
               },
               createdAt: new Date(),
               updatedAt: new Date(),

@@ -1,64 +1,40 @@
-import { Link, useParams } from "react-router-dom";
 import { useInvestigation } from "@/api/queries/investigations";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { sanitizeMarkdownText } from "@/utils/strings";
-import GrafanaLogo from "@/assets/logo-grafana.png";
 import DatadogLogo from "@/assets/logo-datadog.png";
+import GrafanaLogo from "@/assets/logo-grafana.png";
+import JiraLogo from "@/assets/logo-jira-service-management.png";
+import PagerDutyLogo from "@/assets/logo-pagerduty.png";
 import SentryLogo from "@/assets/logo-sentry.svg";
-import { FaGithub } from "react-icons/fa";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { vs } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { format, formatDistanceToNowStrict } from "date-fns";
+import { Avatar } from "@/components/base/avatar/avatar";
+import { BadgeColors } from "@/components/base/badges/badge-types";
 import { Badge, BadgeWithIcon } from "@/components/base/badges/badges";
 import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
-import { BadgeColors } from "@/components/base/badges/badge-types";
-import Divider from "@/components/common/Divider";
-import Typography from "@/components/common/Typography";
-import { cx } from "@/utils/cx";
-import {
-  ArrowRight,
-  ChevronDown,
-  LinkExternal01,
-  AlertCircle,
-} from "@untitledui/icons";
-import { Avatar } from "@/components/base/avatar/avatar";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@radix-ui/react-accordion";
+} from "@/components/common/Accordion";
+import Divider from "@/components/common/Divider";
+import Typography from "@/components/common/Typography";
+import { ICheckFile, IInvestigationCheck } from "@/types/Investigtion";
+import { cx } from "@/utils/cx";
 import {
-  getStatusText,
-  StatusColorMap,
-  StatusBadgeComponentMap,
-  StatusIconMap,
   getPriorityText,
+  getStatusText,
   PriorityColorMap,
+  StatusBadgeComponentMap,
+  StatusColorMap,
+  StatusIconMap,
 } from "@/utils/investigations";
-import PagerDutyLogo from "@/assets/logo-pagerduty.png";
-import JiraLogo from "@/assets/logo-jira-service-management.png";
-
-interface File {
-  filename: string;
-  url: string;
-  text?: string;
-}
-
-interface Check {
-  _id: string;
-  source: string;
-  result: {
-    summary: string;
-    explanation?: string;
-  };
-  action?: {
-    query?: string;
-    url?: string;
-    files?: Array<File>;
-  };
-}
+import { sanitizeMarkdownText } from "@/utils/strings";
+import { AlertCircle, ArrowRight, LinkExternal01 } from "@untitledui/icons";
+import { format, formatDistanceToNowStrict } from "date-fns";
+import { FaGithub } from "react-icons/fa";
+import Markdown from "react-markdown";
+import { Link, useParams } from "react-router-dom";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { vs } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import remarkGfm from "remark-gfm";
 
 function StatusBadge({ statusText }: { statusText: string }) {
   const StatusBadgeComponent =
@@ -120,8 +96,16 @@ function InvestigationDetailsLeftPanel() {
   const { id, checkId } = useParams();
   const { data: investigation } = useInvestigation(id || "");
 
-  const { pdDetails, jsmDetails, hypothesis, updatedAt, checks } =
-    investigation;
+  const {
+    pdDetails,
+    jsmDetails,
+    hypothesis,
+    rootCause,
+    recommendedFix,
+    confidenceLevel,
+    updatedAt,
+    checks,
+  } = investigation;
   const relativeTime = updatedAt
     ? formatDistanceToNowStrict(new Date(updatedAt), { addSuffix: true })
     : "";
@@ -162,7 +146,10 @@ function InvestigationDetailsLeftPanel() {
             />
             <div className="flex items-center gap-2">
               {/* leading-[19px] is to optically match the alignment of the source logo */}
-              <Typography variant="sm/medium" className="text-primary leading-[19px]">
+              <Typography
+                variant="sm/medium"
+                className="text-primary leading-[19px]"
+              >
                 {source}
               </Typography>
               <LinkExternal01 size={14} className="mt-0.5" />
@@ -202,6 +189,27 @@ function InvestigationDetailsLeftPanel() {
         </div>
       </div>
 
+      {rootCause && (
+        <div className="flex gap-3 flex-col justify-start items-start mb-5">
+          <Typography variant="md/semibold" className="text-primary">
+            Root cause
+          </Typography>
+
+          <Typography
+            variant="md/normal"
+            className="[&_p]:m-0 [&_a]:text-blue-600 [&_p]:break-words [&_a]:break-all [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:overflow-auto"
+          >
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {sanitizeMarkdownText(rootCause)}
+            </Markdown>
+
+            <Badge type="pill-color" size="md" color="gray">
+              {confidenceLevel}
+            </Badge>
+          </Typography>
+        </div>
+      )}
+
       <div className="flex gap-3 flex-col justify-start items-start mb-5">
         <Typography variant="md/semibold" className="text-primary">
           Hypothesis
@@ -217,6 +225,23 @@ function InvestigationDetailsLeftPanel() {
         </Typography>
       </div>
 
+      {recommendedFix && (
+        <div className="flex gap-3 flex-col justify-start items-start mb-5">
+          <Typography variant="md/semibold" className="text-primary">
+            Recommended fix
+          </Typography>
+
+          <Typography
+            variant="md/normal"
+            className="[&_p]:m-0 [&_a]:text-blue-600 [&_p]:break-words [&_a]:break-all [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:overflow-auto"
+          >
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {sanitizeMarkdownText(recommendedFix)}
+            </Markdown>
+          </Typography>
+        </div>
+      )}
+
       {checks.length > 0 && (
         <div className="flex gap-3 flex-col justify-start items-start">
           <Typography variant="md/semibold" className="text-primary">
@@ -224,7 +249,7 @@ function InvestigationDetailsLeftPanel() {
           </Typography>
           {checks.length > 0 && (
             <div className="flex gap-3 flex-col justify-start items-start w-full">
-              {checks.map((check: Check) => (
+              {checks.map((check: IInvestigationCheck) => (
                 <Link
                   className="w-full"
                   key={check._id}
@@ -349,8 +374,8 @@ function InvestigationDetailsRightPanel() {
 }
 
 interface ExplanationBlockProps {
-  action: Check["action"];
-  result: Check["result"];
+  action: IInvestigationCheck["action"];
+  result: IInvestigationCheck["result"];
   source: string;
 }
 
@@ -363,47 +388,39 @@ function ExplanationBlock({ action, result, source }: ExplanationBlockProps) {
         </Typography>
         <Typography variant="md/normal">{result?.summary}</Typography>
       </div>
-
       <div className="flex flex-col gap-3">
         <Typography variant="md/semibold">
-          {source === "github" ? "Explanation" : action?.query}
+          {source === "github"
+            ? "Explanation"
+            : action?.query || action?.issue_title}
         </Typography>
         <Typography variant="md/normal">{result?.explanation}</Typography>
       </div>
       {source === "github" && (
         <div className="flex flex-col gap-3 ">
           <Typography variant="md/semibold">Documents</Typography>
-          <div className="border border-gray-200 rounded-lg">
-            <Accordion type="single" collapsible>
-              {action?.files?.map((f: File, i: number) => (
-                <AccordionItem key={f.filename} value={f.filename + i}>
-                  <AccordionTrigger className="group flex items-center justify-between w-full p-3 pr-5 cursor-pointer border-b border-gray-200">
-                    <a className="flex gap-1" href={f.url} target="_blank">
-                      <Typography
-                        variant="md/semibold"
-                        className="text-primary"
-                      >
-                        {f.filename}
-                      </Typography>
-                      <LinkExternal01 size={14} className="mt-0.5" />
-                    </a>
-                    <ChevronDown
-                      className="transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] group-data-[state=open]:rotate-180 text-gray-400"
-                      size={24}
-                    />
-                  </AccordionTrigger>
-                  <AccordionContent className="p-3 border-b border-gray-200">
-                    <SyntaxHighlighter
-                      customStyle={{ fontSize: "0.875rem", lineHeight: 1.5 }}
-                      style={vs}
-                    >
-                      {f.text as string}
-                    </SyntaxHighlighter>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
+          <Accordion type="single" collapsible>
+            {action?.files?.map((f: ICheckFile, i: number) => (
+              <AccordionItem key={f.filename} value={f.filename + i}>
+                <AccordionTrigger className="p-3 pr-5 border-b border-gray-200">
+                  <a className="flex gap-1" href={f.url} target="_blank">
+                    <Typography variant="md/semibold" className="text-primary">
+                      {f.filename}
+                    </Typography>
+                    <LinkExternal01 size={14} className="mt-0.5" />
+                  </a>
+                </AccordionTrigger>
+                <AccordionContent className="p-3 border-b border-gray-200">
+                  <SyntaxHighlighter
+                    customStyle={{ fontSize: "0.875rem", lineHeight: 1.5 }}
+                    style={vs}
+                  >
+                    {f.text as string}
+                  </SyntaxHighlighter>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       )}
     </div>

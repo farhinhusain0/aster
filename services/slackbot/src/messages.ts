@@ -11,7 +11,6 @@ const AUTO_INVESTIGATION_MESSAGE =
 // Regex to handle Slack markdown links and case insensitive IDs
 const PAGERDUTY_INCIDENT_REGEX =
   /<.*?pagerduty\.com\/incidents\/([a-zA-Z0-9]+)(?:\?|#|>|$)/i;
-const HYPOTHESIS_REGEX = /### Hypothesis on Root Cause([\s\S]*?)(?=###|$)/i;
 
 export function attachMessages(app: App) {
   app.message(async ({ message: msg, say, client }) => {
@@ -73,9 +72,7 @@ export function attachMessages(app: App) {
     await addReaction(client, message.channel, message.ts, "eyes");
 
     try {
-      const messages = [
-        await parseMessage(message, botUserId!, client.token!),
-      ];
+      const messages = [await parseMessage(message, botUserId!, client.token!)];
       const metadata = {} as { eventId: string };
 
       const { team } = message;
@@ -102,6 +99,7 @@ export function attachMessages(app: App) {
           isInvestigation: shouldAutoInvestigate,
           secondaryInvestigationId: seconderyInvestigationIdentifier,
         });
+      let finalResponse = output;
 
       let investigationExtraBlocks = [] as Object[];
       if (shouldAutoInvestigate) {
@@ -110,17 +108,24 @@ export function attachMessages(app: App) {
         console.log("email", email);
         console.log("team", team);
 
-        console.log("initial ivestigation");
-        console.log(output);
-        console.log("initial ivestigation end");
-        const hypothesis = output.match(HYPOTHESIS_REGEX)?.[1]?.trim();
-        console.log("########### hypothesis ##########");
-        console.log(hypothesis);
-        console.log("########### hypothesis end ##########");
+        const {
+          rootCause,
+          hypothesis,
+          recommendedFix,
+          confidenceLevel,
+          codeChangeSHAs,
+          codeChangesDescription,
+        } = JSON.parse(output);
+        finalResponse = hypothesis;
 
         const resp = await createInvestigation({
           investigationId,
-          hypothesis: output,
+          hypothesis,
+          rootCause,
+          recommendedFix,
+          confidenceLevel,
+          codeChangeSHAs,
+          codeChangesDescription,
           pdIncidentId,
           email,
           team,
@@ -168,13 +173,13 @@ export function attachMessages(app: App) {
       };
 
       const response = await say({
-        text: output,
+        text: finalResponse,
         blocks: [
           {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: output,
+              text: finalResponse,
             },
           },
           ...(investigationExtraBlocks as Block[]),

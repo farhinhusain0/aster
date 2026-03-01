@@ -6,15 +6,13 @@ import {
   VendorName,
   JiraServiceManagementIntegration,
   IOrganization,
+  investigationCheckModel,
 } from "@aster/db";
 import { checkAuth, getDBUser } from "../middlewares/auth";
 import { getSlackUser } from "../middlewares/slack";
 import { catchAsync } from "../utils/errors";
 import { AppError } from "../errors";
-import {
-  JiraServiceManagementClient,
-  PagerDutyClient,
-} from "../clients";
+import { JiraServiceManagementClient, PagerDutyClient } from "../clients";
 import { secretManager } from "../common/secrets";
 import { Types } from "mongoose";
 import { getTeamsUser } from "../middlewares/teams";
@@ -26,7 +24,16 @@ router.post(
   "/slack",
   getSlackUser, // Use the Slack middleware instead of manual token check
   catchAsync(async (req: Request, res: Response) => {
-    const { hypothesis, pdIncidentId, investigationId } = req.body;
+    const {
+      hypothesis,
+      rootCause,
+      recommendedFix,
+      codeChangeSHAs,
+      codeChangesDescription,
+      confidenceLevel,
+      pdIncidentId,
+      investigationId,
+    } = req.body;
     const organizationId = String(req.user!.organization._id);
 
     // Get PagerDuty integration
@@ -54,10 +61,26 @@ router.post(
 
     const pdIncident = await pdClient.getIncident(pdIncidentId);
 
+    await investigationCheckModel.getOneAndUpdateByFilter(
+      {
+        investigation: investigationId,
+        source: "github",
+      },
+      {
+        $set: {
+          "action.codeChangeSHAs": codeChangeSHAs,
+          "action.codeChangesDescription": codeChangesDescription,
+        },
+      },
+    );
+
     const investigation = await investigationModel.getOneAndUpdate(
       { _id: investigationId },
       {
         hypothesis,
+        rootCause,
+        recommendedFix,
+        confidenceLevel,
         pdIncidentId,
         pdDetails: pdIncident.incident,
         status: "active",
@@ -72,7 +95,17 @@ router.post(
   "/teams",
   getTeamsUser,
   catchAsync(async (req: Request, res: Response) => {
-    const { investigationId, hypothesis, vendorName, incidentId } = req.body;
+    const {
+      investigationId,
+      hypothesis,
+      rootCause,
+      confidenceLevel,
+      codeChangeSHAs,
+      codeChangesDescription,
+      recommendedFix,
+      vendorName,
+      incidentId,
+    } = req.body;
 
     const investigation = await investigationModel
       .getOneById(investigationId)
@@ -142,11 +175,27 @@ router.post(
       pdDetails = pdIncident.incident;
     }
 
+    await investigationCheckModel.getOneAndUpdateByFilter(
+      {
+        investigation: investigationId,
+        source: "github",
+      },
+      {
+        $set: {
+          "action.codeChangeSHAs": codeChangeSHAs,
+          "action.codeChangesDescription": codeChangesDescription,
+        },
+      },
+    );
+
     await investigationModel.getOneAndUpdate(
       { _id: investigationId },
       {
         status: "active",
         hypothesis,
+        rootCause,
+        confidenceLevel,
+        recommendedFix,
         jsmDetails,
         pdDetails,
         pdIncidentId,
@@ -243,21 +292,6 @@ router.get(
       {
         $limit: limit,
       },
-      {
-        $lookup: {
-          from: "investigationchecks", // The collection name for InvestigationCheck
-          localField: "_id",
-          foreignField: "investigation",
-          as: "checks",
-          pipeline: [
-            {
-              $sort: {
-                createdAt: -1,
-              },
-            },
-          ],
-        },
-      },
     ]);
 
     return res.status(200).json({
@@ -288,7 +322,7 @@ router.get(
           pipeline: [
             {
               $sort: {
-                createdAt: -1,
+                createdAt: 1,
               },
             },
           ],

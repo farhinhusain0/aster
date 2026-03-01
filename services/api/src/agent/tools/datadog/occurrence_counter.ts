@@ -7,8 +7,29 @@ import { getLogsInstance } from "../../../clients/datadog";
 import { RunContext } from "../../../agent/types";
 import { buildDatadogLogsUrl } from "../utils";
 
-const TOOL_DESCRIPTION = `This tool counts the occurrences of a specific incident within the last 24 hours from Datadog logs to assess the impact of the issue. 
-By providing an array of keywords related to the incident, the tool delivers the count of occurrences that have been logged during that time frame.`;
+const getTimeSeriesStats = (logs: v2.Log[]) => {
+  const now = new Date();
+  const HOUR_MS = 60 * 60 * 1000;
+
+  return Array.from({ length: 24 }, (_, i) => {
+    const hourStart = new Date(now.getTime() - (24 - i) * HOUR_MS);
+    const hourEnd = new Date(hourStart.getTime() + HOUR_MS);
+
+    const value = logs.filter((log) => {
+      if (!log.attributes?.timestamp) return false;
+      const ts = new Date(log.attributes.timestamp).getTime();
+      return ts >= hourStart.getTime() && ts < hourEnd.getTime();
+    }).length;
+
+    return { timestamp: hourStart.toISOString(), value };
+  });
+};
+
+const TOOL_DESCRIPTION = `This tool counts the occurrences of a specific incident within the last 24 hours from Datadog logs to assess the impact of the issue. By providing an array of keywords related to the incident, the tool delivers the count of occurrences that have been logged during that time frame.
+
+Here are some examples that you can use:
+- What's the customer impact?
+- What is the customer impact?`;
 
 export default async function (
   integration: DataDogIntegration,
@@ -48,6 +69,7 @@ export default async function (
         const resp = await instance.listLogs(params);
         const logs = resp.data;
         const logsCount: number = logs ? logs.length : 0;
+        const stats = getTimeSeriesStats(logs ?? []);
 
         if (context.shouldGenerateChecks && investigation) {
           const investigationCheck = await investigationCheckModel.getOne({
@@ -61,6 +83,7 @@ export default async function (
               investigation: investigation,
               source: "datadog",
               action: {
+                stats: stats,
                 request:
                   "Count occurrences of incident keywords in Datadog logs",
                 query: query,

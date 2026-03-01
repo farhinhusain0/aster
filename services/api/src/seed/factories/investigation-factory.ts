@@ -1,4 +1,8 @@
-import { IInvestigation, IOrganization } from "@aster/db";
+import {
+  IInvestigation,
+  InvestigationConfidenceLevel,
+  IOrganization,
+} from "@aster/db";
 import mongoose from "mongoose";
 
 /**
@@ -12,6 +16,9 @@ export interface SeedInvestigationConfig {
   organization: IOrganization;
   pdIncidentId: string;
   pdDetails: object;
+  rootCause: string;
+  recommendedFix: string;
+  confidenceLevel: InvestigationConfidenceLevel;
 }
 
 /**
@@ -35,6 +42,9 @@ export function createSeedInvestigation(
     pdIncidentId: config.pdIncidentId,
     pdDetails: config.pdDetails,
     jsmDetails: null,
+    rootCause: config.rootCause,
+    recommendedFix: config.recommendedFix,
+    confidenceLevel: config.confidenceLevel,
   };
 }
 
@@ -47,6 +57,11 @@ export const SEED_INVESTIGATION_PRESETS = {
     _id: new mongoose.Types.ObjectId("000000000000000000000001"),
     hypothesis:
       'There was 1 incident affecting the `payment-local` service, with 68 payment transaction failures logged as "Payment charge failed" in the last 24 hours. The error consistently occurs in the Stripe API call within `src/payment/charge.js`, but no stack traces or detailed error messages are present—likely due to generic error handling. No code or configuration changes have occurred in the last 2 months, ruling out recent deployments as the cause. The most probable cause is an external or environmental issue, such as problems with the `STRIPE_API_KEY`, `STRIPE_URL`, or Stripe API availability. Recommended next steps: verify environment variables on the payment service, check Stripe API status, and improve logging to capture the underlying Stripe error response.\n',
+    rootCause:
+      "The environment variable STRIPE_URL is not set in the payment service's production environment.",
+    recommendedFix:
+      "Set the STRIPE_URL environment variable in the payment service's deployment configuration.",
+    confidenceLevel: InvestigationConfidenceLevel.High,
     pdDetails: {
       incident_number: 1239,
       title:

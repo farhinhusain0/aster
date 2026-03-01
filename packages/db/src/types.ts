@@ -447,10 +447,20 @@ export enum VendorName {
   JiraServiceManagement = "Jira Service Management",
 }
 
+export enum InvestigationConfidenceLevel {
+  Low = "low",
+  Medium = "medium",
+  High = "high",
+}
+
 export interface IInvestigation {
   _id: Types.ObjectId;
   hypothesis: string;
+  rootCause: string;
+  recommendedFix: string;
+  confidenceLevel: InvestigationConfidenceLevel;
   organization: IOrganization;
+  // TODO: Convert to enums
   status: "init" | "active" | "resolved" | "dismissed";
   pdIncidentId?: string | null;
   pdDetails?: Object | null;
@@ -463,6 +473,7 @@ export interface IInvestigation {
 export interface IInvestigationCheck {
   _id: Types.ObjectId;
   investigation: IInvestigation;
+  // TODO: Convert them to enums
   source: "github" | "grafana" | "datadog" | "sentry";
   action: Object;
   result: Object;

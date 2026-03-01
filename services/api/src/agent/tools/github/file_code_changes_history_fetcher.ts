@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { DynamicStructuredTool } from "langchain";
-import type { GithubIntegration } from "@aster/db";
+import {
+  IInvestigation,
+  investigationCheckModel,
+  investigationModel,
+  type GithubIntegration,
+} from "@aster/db";
 import { GithubClient } from "../../../clients";
+import { RunContext } from "../../types";
 
 const schema = z.object({
   repoFullName: z
@@ -15,7 +21,10 @@ const schema = z.object({
     ),
 });
 
-export default async function (integration: GithubIntegration) {
+export default async function (
+  integration: GithubIntegration,
+  context: RunContext,
+) {
   const { access_token } = integration.credentials;
   const { reposToSync } = integration.settings;
 
@@ -57,6 +66,63 @@ export default async function (integration: GithubIntegration) {
         });
 
         console.log("####### file codechange diff ########", diff);
+
+        /**
+         * Find if we have an existing investigation check for `github` source
+         * if we do, update the existing investigation and store the new diffs
+         * if we don't, create a new investigation check with the new diffs
+         * in the action key of the investigation check
+         */
+        try {
+          const investigation = (await investigationModel.getOneById(
+            context.investigationId as string,
+          )) as IInvestigation;
+
+          if (!investigation) {
+            throw new Error("Investigation not found");
+          }
+
+          /**
+           * Match the same diffs structure as the branch_code_change_history_fetcher tool
+           * this is because we want to store the diffs in the same structure
+           * as the branch_code_change_history_fetcher tool for consistency
+           */
+          const diffs = { [repoName]: diff };
+
+          const investigationCheck = await investigationCheckModel.getOne({
+            source: "github",
+            investigation: investigation,
+          });
+
+          if (investigationCheck) {
+            console.log(
+              "[TOOLS]->[GITHUB]->[file_code_changes_history_fetcher]: Updating existing investigation check",
+            );
+            investigationCheck.action = {
+              ...investigationCheck.action,
+              diffs,
+            };
+            investigationCheck.updatedAt = new Date();
+            await investigationCheck.save();
+          } else {
+            console.log(
+              "[TOOLS]->[GITHUB]->[file_code_changes_history_fetcher]: Creating new investigation check",
+            );
+            await investigationCheckModel.create({
+              source: "github",
+              investigation: investigation,
+              action: {
+                diffs,
+              },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          }
+        } catch (error: any) {
+          console.error(
+            `[TOOLS]->[GITHUB]->[file_code_changes_history_fetcher]: Error storing code change history in investigation check: ${error.message}`,
+          );
+        }
 
         return JSON.stringify(diff, null, 2);
       } catch (error: any) {

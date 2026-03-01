@@ -5,8 +5,6 @@ import type { RunContext } from "../../types";
 import { DynamicStructuredTool } from "langchain";
 import { z } from "zod";
 import { calculateLCSLength } from "../../../utils/strings";
-import { checksSummaryPrompt, dataExplanationPrompt } from "../../prompts";
-import { chatModel } from "../../model";
 
 const SIMILARITY_THRESHOLD = 0.5;
 
@@ -115,7 +113,8 @@ export default async function (
       if (issue == null) {
         return "No matching Sentry issue found";
       }
-      const events = await sentry.getIssueEvents(issue.id);
+      const issue_id = issue.id;
+      const events = await sentry.getIssueEvents(issue_id);
 
       // Investigation check logic (update or create) with LLM summary
       if (context.shouldGenerateChecks && investigation) {
@@ -124,46 +123,26 @@ export default async function (
           source: "sentry",
         });
 
+        const latest_event_id = events[0].id;
+        const latest_event = await sentry.getIssueEvent(
+          issue_id,
+          latest_event_id,
+        );
+        const stats = await sentry.getIssueEventsTimeseries({
+          issueId: issue_id,
+        });
+
         const action = {
           request: `Analyze Sentry issue: ${issue_title}`,
-          issue_id: issue.id,
           issue_title: issue.title,
+          issue,
+          latest_event,
+          stats,
         };
 
         // Use LLM to generate summary and explanation
         let summary = `Sentry issue '${issue.title}' was analyzed for root cause and user impact.`;
-        let explanation = `Recent events: ${JSON.stringify(events.slice(0, 3), null, 2)}`;
-
-        try {
-          const queryExplanationPrompt = await dataExplanationPrompt.format({
-            toolDescription: TOOL_DESCRIPTION,
-            data: `Sentry Issue:\n${JSON.stringify(issue, null, 2)}\n\nRecent Events:\n${JSON.stringify(events.slice(0, 3), null, 2)}`,
-            query: action.request,
-            context: issue.title,
-          });
-
-          const explanationAiResponse = await chatModel.invoke(
-            queryExplanationPrompt,
-            { callbacks: [] },
-          );
-
-          const checkSummaryPrompt = await checksSummaryPrompt.format({
-            toolDescription: TOOL_DESCRIPTION,
-            query: action.request,
-            result: explanationAiResponse.content.toString(),
-            context: issue.title,
-          });
-
-          const summaryAiResponse = await chatModel.invoke(checkSummaryPrompt, {
-            callbacks: [],
-          });
-
-          summary = summaryAiResponse.content.toString();
-          explanation = explanationAiResponse.content.toString();
-        } catch (err) {
-          console.error("LLM summary failed, falling back to default.", err);
-        }
-
+        let explanation = `Fetched total of ${events.length} events for the issue.`;
         const result = { summary, explanation };
 
         if (investigationCheck) {

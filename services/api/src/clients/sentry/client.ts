@@ -84,4 +84,35 @@ export class SentryClient {
       throw error;
     }
   };
+
+  /**
+   * Fetch the timeseries data for a specific Sentry issue.
+   * 
+   * Documentation: https://docs.sentry.io/api/explore/query-explore-events-in-timeseries-format/
+   * 
+   * @param {object} options - The options for the request.
+   * @param {string} options.issueId - The Sentry issue ID.
+   * @param {string} options.statsPeriod - The stats period.
+   * @returns The timeseries data for the issue.
+   */
+  getIssueEventsTimeseries = async ({
+    issueId,
+    statsPeriod = "24h",
+  }: {
+    issueId: string;
+    statsPeriod?: string;
+  }) => {
+    try {
+      const response = await this.axios.get(
+        /**
+         * You can get all `query` properties and it's convention [here](https://docs.sentry.io/concepts/search/searchable-properties/) if needed.
+         */
+        `/events-timeseries/?query=issue.id:${issueId}&statsPeriod=${statsPeriod}&yAxis=count()&yAxis=count_unique(user)`,
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching Sentry issue stats:", error);
+      throw error;
+    }
+  };
 }

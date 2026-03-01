@@ -83,15 +83,15 @@ function createCodeBlock(code: string): AdaptiveCardElement {
  * Create an investigation card with proper markdown support
  */
 export function createInvestigationCardWithMarkdown({
-  output,
+  hypothesis,
   investigationId,
 }: {
-  output: string;
+  hypothesis: string;
   investigationId: string;
 }) {
   const viewInAsterUrl = `${process.env.DASHBOARD_APP_URL}/investigations/${investigationId}`;
 
-  const bodyElements = convertMarkdownToAdaptiveCard(output);
+  const bodyElements = convertMarkdownToAdaptiveCard(hypothesis);
 
   // Add action buttons and footer
   bodyElements.push(
